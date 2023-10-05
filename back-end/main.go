@@ -2,17 +2,16 @@ package main
 
 import (
   "fmt"
-  // "net/http"
   "github.com/gin-gonic/gin"
   "gopkg.in/olahol/melody.v1"
-  . "github.com/eagledb14/cs428-2p-game/types"
+  "github.com/eagledb14/cs428-2p-game/types"
 )
 
 var router = gin.Default()
 
 var socket = melody.New()
 
-var lobbies = NewLobbyList()
+var lobbies = types.NewLobbyList()
 
 func main() {
   fmt.Println("Hello World")
@@ -26,7 +25,7 @@ func main() {
     }
   })
 
-  l := NewLobby("checkers")
+  l := types.NewLobby("checkers")
   fmt.Println(l)
 
   router.Run(":8080")

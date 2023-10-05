@@ -16,7 +16,7 @@ func NewLobbyList() LobbyList {
   }
 }
 
-func (l *LobbyList) GetLobby(lobbyName string) (Lobby, bool) {
+func (l *LobbyList) Get(lobbyName string) (Lobby, bool) {
   l.mutex.Lock()
   defer l.mutex.Unlock()
 
@@ -24,14 +24,14 @@ func (l *LobbyList) GetLobby(lobbyName string) (Lobby, bool) {
   return value, exists
 }
 
-func (l *LobbyList) SetLobby(lobbyName string, lobby Lobby) {
+func (l *LobbyList) Set(lobbyName string, lobby Lobby) {
   l.mutex.Lock()
   defer l.mutex.Unlock()
 
   l.lobbies[lobbyName] = lobby
 }
 
-func (l *LobbyList) RemoveLobby(lobbyName string) {
+func (l *LobbyList) Remove(lobbyName string) {
   l.mutex.Lock()
   defer l.mutex.Unlock()
 
