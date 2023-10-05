@@ -1,0 +1,4 @@
+go.sum
+.nuxt
+node_modules
+.vscode
