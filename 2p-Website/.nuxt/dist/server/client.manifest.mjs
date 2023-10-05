@@ -1,0 +1,1 @@
+export { default } from "file:///root/repos/cs428-2p-game/2p-Website/node_modules/@nuxt/vite-builder/dist/runtime/client.manifest.mjs"
