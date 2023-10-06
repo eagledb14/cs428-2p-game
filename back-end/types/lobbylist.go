@@ -5,13 +5,13 @@ import (
 )
 
 type LobbyList struct {
-  lobbies map[string]Lobby
+  lobbies map[string]*Lobby
   mutex sync.Mutex
 }
 
 func NewLobbyList() LobbyList {
   return LobbyList {
-    lobbies: make(map[string]Lobby),
+    lobbies: make(map[string]*Lobby),
     mutex: sync.Mutex{},
   }
 }
@@ -21,10 +21,10 @@ func (l *LobbyList) Get(lobbyName string) (Lobby, bool) {
   defer l.mutex.Unlock()
 
   value, exists := l.lobbies[lobbyName]
-  return value, exists
+  return *value, exists
 }
 
-func (l *LobbyList) Set(lobbyName string, lobby Lobby) {
+func (l *LobbyList) Set(lobbyName string, lobby *Lobby) {
   l.mutex.Lock()
   defer l.mutex.Unlock()
 
