@@ -32,6 +32,7 @@ func handleConnect(s *melody.Session) {
   if len(lobby.Players) != 2 {
     return
   }
+  lobby.IsPlaying = true
 
   //sends each player their session id
   lobby.Shuffle()
