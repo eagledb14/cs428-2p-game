@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/eagledb14/cs428-2p-game/types"
 	"gopkg.in/olahol/melody.v1"
-  "github.com/eagledb14/cs428-2p-game/types"
 )
 
 
@@ -15,14 +15,15 @@ func handleSockets(m *melody.Melody) {
   m.HandleMessage(func(s *melody.Session, msg []byte) {
     handleMessage(s, msg)
   })
+
+  m.HandleDisconnect(func(s *melody.Session) {
+    handleDisconnect(s)
+  })
 }
 
 func handleConnect(s *melody.Session) {
-  lobbyId := s.Request.URL.Query().Get("id")
+  lobbyId := s.Request.URL.Query().Get("lobbyId")
   lobby, _ := lobbies.Get(lobbyId)
-  
-  s.Set("lobbyId", lobbyId)
-  s.Set("gameType", lobby.GameType)
 
   //adding new connectiong to the lobby
   lobby.Players = append(lobby.Players, s)
@@ -51,11 +52,35 @@ func handleConnect(s *melody.Session) {
 
 func handleMessage(s *melody.Session, msg []byte) {
   //get lobby from lobbyList
-  lobbyId, _ := s.Get("lobbyId")
-  lobby, _ := lobbies.Get(lobbyId.(string))
+  lobbyId := s.Request.URL.Query().Get("lobbyId")
+
+  lobby, exists := lobbies.Get(lobbyId)
+  if !exists {
+    return
+  }
 
   //sends message to the running game
   lobby.Chan <- string(msg)
+}
+
+func handleDisconnect(s *melody.Session) {
+  lobbyId := s.Request.URL.Query().Get("lobbyId")
+
+  lobby, exists := lobbies.Get(lobbyId)
+  if !exists {
+    return
+  }
+
+  //signaling quit to the running game
+  lobby.Quit <- struct{}{}
+
+  //closing the other players connections to the game
+  for _, player := range lobby.Players {
+    player.CloseWithMsg([]byte("Player Disconnected"))
+  }
+
+  //removing lobby from the available games
+  lobbies.Remove(lobbyId)
 }
 
 
