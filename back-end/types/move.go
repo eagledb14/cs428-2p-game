@@ -3,6 +3,7 @@ package types
 
 type Move struct {
   Player int
+  Reset bool
   To Point
   From Point
 }

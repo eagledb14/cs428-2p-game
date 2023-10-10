@@ -9,6 +9,7 @@ import (
 type Lobby struct {
   GameType string
   Players []*melody.Session
+  IsPlaying bool
   Chan chan string
   Quit chan struct{}
 }
@@ -17,6 +18,7 @@ func NewLobby(gameType string) Lobby {
   return Lobby {
     GameType: gameType,
     Players: []*melody.Session{},
+    IsPlaying: false,
     Chan: make(chan string, 10),
     Quit: make(chan struct{}),
   }
