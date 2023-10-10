@@ -11,6 +11,10 @@ func handleSockets(m *melody.Melody) {
   m.HandleConnect(func(s *melody.Session) {
     handleConnect(s)
   })
+
+  m.HandleMessage(func(s *melody.Session, msg []byte) {
+    handleMessage(s, msg)
+  })
 }
 
 func handleConnect(s *melody.Session) {
@@ -45,10 +49,22 @@ func handleConnect(s *melody.Session) {
   }
 }
 
+func handleMessage(s *melody.Session, msg []byte) {
+  //get lobby from lobbyList
+  lobbyId, _ := s.Get("lobbyId")
+  lobby, _ := lobbies.Get(lobbyId.(string))
+
+  //sends message to the running game
+  lobby.Chan <- string(msg)
+}
+
 
 func testGame(lobby *types.Lobby) {
-  for i, player := range lobby.Players {
-    player.Write([]byte(fmt.Sprintf("connected to new lobby: %d", i)))
+  var msg string
+  msg = <- lobby.Chan
+
+  for _, player := range lobby.Players {
+    player.Write([]byte(msg))
   }
 }
 
