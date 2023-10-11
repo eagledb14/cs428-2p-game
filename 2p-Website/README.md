@@ -38,6 +38,24 @@ yarn dev
 bun run dev
 ```
 
+## Test Server Socket
+
+Start test server socket on `ws://localhost:3001`:
+
+```bash
+# npm
+npm run server
+
+# pnpm
+pnpm run server
+
+# yarn
+yarn server
+
+# bun
+bun run server
+```
+
 ## Production
 
 Build the application for production:
