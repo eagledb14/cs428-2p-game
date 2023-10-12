@@ -40,20 +40,20 @@ func NewCheckersBoard() Board {
 
   //set up red side
   //0, 2, 4, 6
-  checkersBoard.Set(5, 0, 2)
-  checkersBoard.Set(5, 2, 2)
-  checkersBoard.Set(5, 4, 2)
-  checkersBoard.Set(5, 6, 2)
+  checkersBoard.Set(5, 0, 1)
+  checkersBoard.Set(5, 2, 1)
+  checkersBoard.Set(5, 4, 1)
+  checkersBoard.Set(5, 6, 1)
   //1, 3, 5, 7
-  checkersBoard.Set(6, 1, 2)
-  checkersBoard.Set(6, 3, 2)
-  checkersBoard.Set(6, 5, 2)
-  checkersBoard.Set(6, 7, 2)
+  checkersBoard.Set(6, 1, 1)
+  checkersBoard.Set(6, 3, 1)
+  checkersBoard.Set(6, 5, 1)
+  checkersBoard.Set(6, 7, 1)
   //0, 2, 4, 6
-  checkersBoard.Set(7, 0, 2)
-  checkersBoard.Set(7, 2, 2)
-  checkersBoard.Set(7, 4, 2)
-  checkersBoard.Set(7, 6, 2)
+  checkersBoard.Set(7, 0, 1)
+  checkersBoard.Set(7, 2, 1)
+  checkersBoard.Set(7, 4, 1)
+  checkersBoard.Set(7, 6, 1)
 
   return checkersBoard
 }
