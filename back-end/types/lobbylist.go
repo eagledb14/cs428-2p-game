@@ -16,12 +16,12 @@ func NewLobbyList() LobbyList {
   }
 }
 
-func (l *LobbyList) Get(lobbyName string) (Lobby, bool) {
+func (l *LobbyList) Get(lobbyName string) (*Lobby, bool) {
   l.mutex.Lock()
   defer l.mutex.Unlock()
-
+  
   value, exists := l.lobbies[lobbyName]
-  return *value, exists
+  return value, exists
 }
 
 func (l *LobbyList) Set(lobbyName string, lobby *Lobby) {
