@@ -2,7 +2,7 @@ package games
 
 import (
 	"fmt"
-
+	"encoding/json"
 	"github.com/eagledb14/cs428-2p-game/types"
 )
 
@@ -22,7 +22,7 @@ func Tictactoe(lobby *types.Lobby) {
 			board.Set(row, col, currentPlayer)
 
 			if isGameOver(board, row, col, currentPlayer) {
-				fmt.Printf("Player %s wins!\n", currentPlayer)
+				SendUpdate(lobby, board, currentPlayer, true, true)
 				break
 			}
 
@@ -30,10 +30,13 @@ func Tictactoe(lobby *types.Lobby) {
 				fmt.Println("It's a tie!")
 				break
 			}
-
+			SendUpdate(lobby, board, currentPlayer, true, false)
 			currentPlayer = togglePlayer(currentPlayer)
 		} else {
-			fmt.Println("Invalid move. Try again.")
+			// SendUpdate(lobby, board, currentPlayer, false, false)
+			update := types.NewBoardUpdate(false, move.Player, board)
+			json_update, _ := json.Marshal(update)
+			lobby.Players[move.Player].Write([]byte(json_update))
 		}
 	}
 }

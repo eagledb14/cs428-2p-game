@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/eagledb14/cs428-2p-game/types"
+	"github.com/eagledb14/cs428-2p-game/games"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -43,7 +44,8 @@ func handleConnect(s *melody.Session) {
 
   switch lobby.GameType {
   case "tictactoe":
-    go testGame(lobby)
+    // go testGame(lobby)
+    go games.Tictactoe(lobby)
   case "checkers":
     go testGame(lobby)
   default:
