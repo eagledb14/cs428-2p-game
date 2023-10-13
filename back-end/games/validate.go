@@ -21,7 +21,6 @@ func validateMsg(lobby *types.Lobby) (types.Move, bool) {
   }
 }
 
-
 func SendUpdate(lobby *types.Lobby, board types.Board, currentPlayer int, validMove bool, finished bool) {
   update := types.NewBoardUpdate(validMove, currentPlayer, board)
   update.IsOver = finished
@@ -29,4 +28,11 @@ func SendUpdate(lobby *types.Lobby, board types.Board, currentPlayer int, validM
   for _, player := range lobby.Players {
     player.Write([]byte(json_update))
   }
+}
+
+
+func SendError(lobby *types.Lobby, board types.Board, move types.Move) {
+  update := types.NewBoardUpdate(false, move.Player, board)
+  json_update, _ := json.Marshal(update)
+  lobby.Players[move.Player - 1].Write([]byte(json_update))
 }
