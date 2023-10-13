@@ -17,6 +17,7 @@ func Tictactoe(lobby *types.Lobby) {
 
 		if move.Reset {
 			board = types.NewTicTacToeBoard()
+			SendUpdate(lobby, board, currentPlayer, true, false)
 			continue
 		}
 
