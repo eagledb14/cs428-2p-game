@@ -23,17 +23,16 @@ func Tictactoe(lobby *types.Lobby) {
 
 			if isGameOver(board, row, col, currentPlayer) {
 				SendUpdate(lobby, board, currentPlayer, true, true)
-				break
+				continue
 			}
 
 			if isBoardFull(board) {
 				fmt.Println("It's a tie!")
-				break
+				continue
 			}
 			SendUpdate(lobby, board, currentPlayer, true, false)
 			currentPlayer = togglePlayer(currentPlayer)
 		} else {
-			// SendUpdate(lobby, board, currentPlayer, false, false)
 			update := types.NewBoardUpdate(false, move.Player, board)
 			json_update, _ := json.Marshal(update)
 			lobby.Players[move.Player].Write([]byte(json_update))

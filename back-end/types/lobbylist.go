@@ -37,3 +37,7 @@ func (l *LobbyList) Remove(lobbyName string) {
 
   delete(l.lobbies, lobbyName)
 }
+
+func (l *LobbyList) Len() int {
+  return len(l.lobbies)
+}

@@ -44,7 +44,6 @@ func handleConnect(s *melody.Session) {
 
   switch lobby.GameType {
   case "tictactoe":
-    // go testGame(lobby)
     go games.Tictactoe(lobby)
   case "checkers":
     go testGame(lobby)
