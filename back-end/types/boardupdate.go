@@ -1,16 +1,16 @@
 package types
 
 type BoardUpdate struct {
-  ValidMove bool
-  PlayerIdOfMove int
-  IsOver bool
-  Board []int
+  ValidMove bool `json:"validMove"`
+  PlayerMoveId int `json:"playerMoveId"`
+  IsOver bool `json:"isOver"`
+  Board []int `json:"board"`
 }
 
 func NewBoardUpdate(validMove bool, playerId int, board Board) BoardUpdate {
   return BoardUpdate {
     ValidMove: validMove,
-    PlayerIdOfMove: playerId,
+    PlayerMoveId: playerId,
     IsOver: false,
     Board: board.board,
   }
@@ -18,6 +18,6 @@ func NewBoardUpdate(validMove bool, playerId int, board Board) BoardUpdate {
 
 func (b *BoardUpdate) Reset(validMove bool, playerId int, board Board) {
   b.ValidMove = validMove
-  b.PlayerIdOfMove = playerId
+  b.PlayerMoveId = playerId
   b.Board = board.board
 }

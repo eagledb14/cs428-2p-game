@@ -38,13 +38,12 @@ func handleConnect(s *melody.Session) {
   //sends each player their session id
   lobby.Shuffle()
   for i, player := range lobby.Players {
-    player.Set("sessionId", i)
-    player.Write([]byte(fmt.Sprintf("%d", i)))
+    player.Set("sessionId", i + 1)
+    player.Write([]byte(fmt.Sprintf("%d", i + 1)))
   }
 
   switch lobby.GameType {
   case "tictactoe":
-    // go testGame(lobby)
     go games.Tictactoe(lobby)
   case "checkers":
     go testGame(lobby)
