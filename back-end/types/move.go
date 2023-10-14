@@ -1,17 +1,21 @@
 package types
 
+import (
+  // "encoding/json"
+)
+
 
 type Move struct {
-  Player int
-  Reset bool
-  To Point
-  From Point
+  Player int `json:"player"`
+  Reset bool `json:"reset"`
+  To Point `json:"to"`
+  From Point `json:"from"`
 }
 
 
 type Point struct {
-  X int
-  Y int
+  X int `json:"x"`
+  Y int `json:"y"`
 }
 
 func NewPoint(x int, y int) Point {
