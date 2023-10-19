@@ -36,7 +36,11 @@ func handleRoutes(router *gin.Engine, socket *melody.Melody) {
 				c.String(http.StatusOK, lobbyID)
 			} else {
 				//if an id was given, try to find corresponding lobby in list
-				_, lobbyFound := lobbies.Get(id)
+				lobby, lobbyFound := lobbies.Get(id)
+				if lobby.GameType != game {
+					c.String(http.StatusOK, "Wrong game type")
+					return
+				}
 
 				//if lobby exists, create new board and send to frontend
 				if lobbyFound {
