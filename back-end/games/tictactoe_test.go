@@ -20,7 +20,27 @@ func TestIsMoveValid(t *testing.T) {
 }
 
 func TestCheckDiagonals(t *testing.T) {
+	// Create a sample 3x3 Tic Tac Toe board
+	board := types.NewBoard(3, 3)
 
+	// Fill the main diagonal with X symbols
+	for i := 0; i < 3; i++ {
+		board.Set(i, i, 1)
+	}
+
+	// Check that the main diagonal is recognized as a win
+	assert.True(t, checkDiagonals(board, 1))
+
+	// Clear the board
+	board = types.NewBoard(3, 3)
+
+	// Fill the other diagonal with O symbols
+	for i := 0; i < 3; i++ {
+		board.Set(i, 2-i, 2)
+	}
+
+	// Check that the other diagonal is recognized as a win
+	assert.True(t, checkDiagonals(board, 2))
 }
 
 func TestIsBoardFull(t *testing.T) {
