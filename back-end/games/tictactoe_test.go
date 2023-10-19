@@ -12,7 +12,27 @@ func TestTictactoe(t *testing.T) {
 }
 
 func TestCheckRow(t *testing.T) {
+	// Create a sample 3x3 Tic Tac Toe board
+	board := types.NewBoard(3, 3)
 
+	// Fill a row with X symbols (row 1)
+	for j := 0; j < 3; j++ {
+		board.Set(1, j, 1)
+	}
+
+	// Check that row 1 is recognized as a win
+	assert.True(t, checkRow(board, 1, 1))
+
+	// Clear the board
+	board = types.NewBoard(3, 3)
+
+	// Fill a different row with O symbols (row 2)
+	for j := 0; j < 3; j++ {
+		board.Set(2, j, 2)
+	}
+
+	// Check that row 2 is recognized as a win
+	assert.True(t, checkRow(board, 2, 2))
 }
 
 func TestIsMoveValid(t *testing.T) {
