@@ -76,5 +76,25 @@ func TestTogglePlayer(t *testing.T) {
 }
 
 func TestCheckColumn(t *testing.T) {
+	// Create a sample 3x3 Tic Tac Toe board
+	board := types.NewBoard(3, 3)
 
+	// Fill a column with X symbols (column 0)
+	for i := 0; i < 3; i++ {
+		board.Set(i, 0, 1)
+	}
+
+	// Check that column 0 is recognized as a win
+	assert.True(t, checkColumn(board, 0, 1))
+
+	// Clear the board
+	board = types.NewBoard(3, 3)
+
+	// Fill a different column with O symbols (column 1)
+	for i := 0; i < 3; i++ {
+		board.Set(i, 1, 2)
+	}
+
+	// Check that column 1 is recognized as a win
+	assert.True(t, checkColumn(board, 1, 2))
 }
