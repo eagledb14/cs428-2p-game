@@ -15,7 +15,7 @@ import (
 func handleRoutes(router *gin.Engine, socket *melody.Melody) {
 	//initializes a new lobby for a game or connects to an existing one if an id query is given
 	router.GET("/:game", func(c *gin.Context) {
-		id := c.Query("id")
+		id := c.Query("lobbyId")
 		game := c.Param("game")
 		board, gameExists := types.NewGame(game)
 
@@ -75,7 +75,7 @@ func handleRoutes(router *gin.Engine, socket *melody.Melody) {
 			c.String(http.StatusOK, "No lobby ID")
 		}
 	})
-	router.Run(":8081")
+	router.Run(":8080")
 }
 
 func createLobbyID(c *gin.Context) string {
