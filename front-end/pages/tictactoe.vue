@@ -16,8 +16,9 @@
             </table>
         </div>
         <div v-if="isOver" class="game-over">
-            <h1 v-if="player === turn">You win!</h1>
-            <h1 v-else="isOver">You lose!</h1>
+            <h1 v-if="player === winner">You win!</h1>
+            <h1 v-else-if="winner === -1">Tie Game!</h1>
+            <h1 v-else>You loose!</h1>
         </div>
         <button @click="restart()">restart</button>
     </div>
@@ -42,7 +43,8 @@ export default {
             socket: undefined,
             connected: false,
             player: 0,
-            isOver: false
+            isOver: false,
+            winner: 0,
         }
     },
     mounted() {
@@ -69,6 +71,7 @@ export default {
                 if (!message.isOver && !this.isOver) {
                     this.turn = message.playerMoveId === 1 ? 2 : 1
                 } 
+                this.winner = message.playerMoveId
                 this.isOver = message.isOver
             }
             console.log('message', message)
