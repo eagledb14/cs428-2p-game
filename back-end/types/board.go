@@ -5,14 +5,14 @@ import (
 )
 
 type Board struct {
-	board  []int
+	Board  []int `json:"board"`
 	row    int
 	column int
 }
 
 func NewGame(gameType string) (Board, bool) {
 	switch gameType {
-	case "tic-tac-toe":
+	case "tictactoe":
 		return NewTicTacToeBoard(), true
 	case "checkers":
 		return NewCheckersBoard(), true
@@ -23,7 +23,7 @@ func NewGame(gameType string) (Board, bool) {
 
 func NewBoard(row int, column int) Board {
 	return Board{
-		board:  make([]int, row*column),
+		Board:  make([]int, row*column),
 		row:    row,
 		column: column,
 	}
@@ -75,21 +75,21 @@ func NewTicTacToeBoard() Board {
 
 func (b *Board) Set(x int, y int, value int) error {
 	index := x*b.column + y
-	if index >= len(b.board) || y >= b.row {
+	if index >= len(b.Board) || y >= b.row {
 		return errors.New("Out of bounds Index")
 	}
 
-	b.board[index] = value
+	b.Board[index] = value
 	return nil
 }
 
 func (b *Board) Get(x int, y int) (int, error) {
 	index := x*b.column + y
-	if index >= len(b.board) || y >= b.row {
+	if index >= len(b.Board) || y >= b.row {
 		return 0, errors.New("Out of bounds Index")
 	}
 
-	return b.board[index], nil
+	return b.Board[index], nil
 }
 
 // func (b Board) GetBoard() []int {

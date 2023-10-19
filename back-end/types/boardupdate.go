@@ -14,12 +14,12 @@ func NewBoardUpdate(validMove bool, playerId int, board Board, playerTurn int) B
     PlayerMoveId: playerId,
     PlayerTurn: playerTurn,
     IsOver: false,
-    Board: board.board,
+    Board: board.Board,
   }
 }
 
 func (b *BoardUpdate) Reset(validMove bool, playerId int, board Board) {
   b.ValidMove = validMove
   b.PlayerMoveId = playerId
-  b.Board = board.board
+  b.Board = board.Board
 }
