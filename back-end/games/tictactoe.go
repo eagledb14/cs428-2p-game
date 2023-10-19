@@ -48,6 +48,9 @@ func isMoveValid(board types.Board, row, col int, currentPlayer int, playerWhoMo
 	if currentPlayer != playerWhoMoved {
 		return false
 	}
+	if row > 2 || row < 0 || col > 2 || col < 0 {
+		return false
+	}
 	cell, _ := board.Get(row, col)
 	return cell == 0
 }

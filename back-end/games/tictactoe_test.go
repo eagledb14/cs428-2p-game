@@ -16,7 +16,40 @@ func TestCheckRow(t *testing.T) {
 }
 
 func TestIsMoveValid(t *testing.T) {
+	// Create a sample 3x3 Tic Tac Toe board
+	board := types.NewBoard(3, 3)
 
+	// Define the current player and the player who just moved
+	currentPlayer := 1
+	playerWhoMoved := 1
+
+	// Make some valid moves
+	validMoves := [][2]int{
+		{0, 0},
+		{1, 1},
+		{2, 2},
+	}
+
+	for _, move := range validMoves {
+		row, col := move[0], move[1]
+		assert.True(t, isMoveValid(board, row, col, currentPlayer, playerWhoMoved))
+		board.Set(row, col, currentPlayer) // Simulate setting a piece
+	}
+
+	// Make some invalid moves
+	invalidMoves := [][2]int{
+		{0, 0},  // Already taken
+		{1, 1},  // Already taken
+		{-1, 0}, // Out of bounds
+		{3, 0},  // Out of bounds
+		{0, -1}, // Out of bounds
+		{0, 3},  // Out of bounds
+	}
+
+	for _, move := range invalidMoves {
+		row, col := move[0], move[1]
+		assert.False(t, isMoveValid(board, row, col, currentPlayer, playerWhoMoved))
+	}
 }
 
 func TestCheckDiagonals(t *testing.T) {
