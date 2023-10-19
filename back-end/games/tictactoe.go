@@ -32,7 +32,7 @@ func Tictactoe(lobby *types.Lobby) {
 			}
 
 			if isBoardFull(board) {
-				SendUpdate(lobby, board, 10, true, true)
+				SendUpdate(lobby, board, -1, true, true)
 				continue
 			}
 

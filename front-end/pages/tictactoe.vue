@@ -1,17 +1,23 @@
 <template>
     <div class="home">
-        <h1>Welcome to tictactoe!</h1>
+        <h1 v-if="!player">Welcome to tictactoe!</h1>
+        <h1 v-if="player === turn">Your turn</h1>
+        <h1 v-if="player && player !== turn">Waiting for opponent</h1>
         <div class="tic-tac-toe-board">
             <table>
                 <tbody>
                     <tr v-for="(row, rowIndex) in table">
                         <td v-for="(item, index) in row" @click="selectedItem(rowIndex, index)">
                             <svg-icon v-if="item === 1" type="mdi" :path="xIcon"></svg-icon>
-                            <svg-icon v-if="item === 0" type="mdi" :path="oIcon"></svg-icon>
+                            <svg-icon v-if="item === 2" type="mdi" :path="oIcon"></svg-icon>
                         </td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+        <div v-if="isOver" class="game-over">
+            <h1 v-if="player === turn">You win!</h1>
+            <h1 v-else="isOver">You lose!</h1>
         </div>
         <button @click="restart()">restart</button>
     </div>
@@ -24,32 +30,53 @@ export default {
     components: {SvgIcon},
     data() {
         return {
-            table: [[-1, -1, -1],
-                    [-1, -1, -1],
-                    [-1, -1, -1]],
+            table: [[0, 0, 0],
+                    [0, 0, 0],
+                    [0, 0, 0]],
             xIcon: mdiWindowClose,
             oIcon: mdiCircleOutline,
-            prevTable: [[-1, -1, -1],
-                        [-1, -1, -1],
-                        [-1, -1, -1]],
-            turn: 0,
+            prevTable: [[0, 0, 0],
+                        [0, 0, 0],
+                        [0, 0, 0]],
+            turn: 1,
             socket: undefined,
             connected: false,
+            player: 0,
+            isOver: false
         }
     },
     mounted() {
         // check for query parameter to join websocket
         // create lobby otherwise, show share link/popup info
-        this.socket = new WebSocket('ws://localhost:3001')
+        // We'll need to call something here to get the board/lobby once that is set up
+        // fetch('http://localhost:8080/tictactoe')
+        //     .then(response => response.json())
+        //     .then(data => console.log(data));
+        this.socket = new WebSocket('ws://localhost:8080/ws?lobbyId=12345')
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
+            if (!this.player) {
+                this.player = message
+            } else if (message?.board && message?.validMove) {
+                // handle move event
+                // ## BoardUpdate
+                // - params
+                // - ValidMove: bool
+                // - Opponent: int
+                // - isOver: bool 
+                // - Board: []int
+                this.table = this.convertBoard(message.board)
+                if (!message.isOver && !this.isOver) {
+                    this.turn = message.playerMoveId === 1 ? 2 : 1
+                } 
+                this.isOver = message.isOver
+            }
             console.log('message', message)
             // Do things based on the event data
         }
         this.socket.onopen = (event) => {
             console.log('opened', event)
             this.connected = true
-            this.socket.send(JSON.stringify({message: 'sending to server'}))
         }
         this.socket.onclose = (event) => {
             this.connected = false
@@ -59,17 +86,28 @@ export default {
     methods: {
         selectedItem(row, column) {
             this.prevTable = this.table
-            if (this.table[row][column] === -1) {
-                this.table[row][column] = this.turn
-                this.turn = this.turn ? 0 : 1
-            } else {
-                alert('Invalid Move, Try again!')
+            if (this.table[row][column] === 0 && this.turn === this.player) {
+                // ## Move
+                // - params
+                // - Player: int
+                // - Reset: bool
+                // - To: Point
+                // - From: Point
+                this.socket.send(JSON.stringify({ Player: this.player, Reset: false, To: { X: row, Y: column }, From: { X: row, Y: column }}))
             }
         },
         restart() {
-            this.table = [[-1, -1, -1],
-                            [-1, -1, -1],
-                            [-1, -1, -1]]
+            this.table = [[0, 0, 0],
+                        [0, 0, 0],
+                        [0, 0, 0]]
+            this.socket.send(JSON.stringify({ Player: this.player, Reset: true, To: { X: 0, Y: 0 }, From: { X: 0, Y: 0 }}))    
+        },
+        convertBoard(board) {
+            const table = []
+            table.push(board.slice(0, 3))
+            table.push(board.slice(3, 6))
+            table.push(board.slice(6, 9))
+            return table
         }
     }
 }
