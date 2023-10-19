@@ -17,7 +17,7 @@ func Tictactoe(lobby *types.Lobby) {
 
 		if move.Reset {
 			board = types.NewTicTacToeBoard()
-			SendUpdate(lobby, board, currentPlayer, true, false)
+			SendUpdate(lobby, board, currentPlayer, currentPlayer, true, false)
 			continue
 		}
 
@@ -27,19 +27,19 @@ func Tictactoe(lobby *types.Lobby) {
 			board.Set(row, col, currentPlayer)
 
 			if isGameOver(board, row, col, currentPlayer) {
-				SendUpdate(lobby, board, currentPlayer, true, true)
+				SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, true)
 				continue
 			}
 
 			if isBoardFull(board) {
-				SendUpdate(lobby, board, -1, true, true)
+				SendUpdate(lobby, board, -1, togglePlayer(currentPlayer), true, true)
 				continue
 			}
 
-			SendUpdate(lobby, board, currentPlayer, true, false)
+			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
 			currentPlayer = togglePlayer(currentPlayer)
 		} else {
-			SendError(lobby, board, move)
+			SendError(lobby, board, move, currentPlayer)
 		}
 	}
 }
