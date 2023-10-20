@@ -1,0 +1,62 @@
+Index: pages/tictactoe.vue
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><template>\n    <div class=\"home\">\n        <h1>Welcome to tictactoe!</h1>\n        <div class=\"tic-tac-toe-board\">\n            <table>\n                <tbody>\n                    <tr v-for=\"(row, rowIndex) in table\">\n                        <td v-for=\"(item, index) in row\" @click=\"selectedItem(rowIndex, index)\">\n                            <svg-icon v-if=\"item === 1\" type=\"mdi\" :path=\"xIcon\"></svg-icon>\n                            <svg-icon v-if=\"item === 0\" type=\"mdi\" :path=\"oIcon\"></svg-icon>\n                        </td>\n                    </tr>\n                </tbody>\n            </table>\n        </div>\n        <button @click=\"restart()\">restart</button>\n    </div>\n</template>\n<script>\nimport SvgIcon from '@jamescoyle/vue-icon';\nimport { mdiCircleOutline, mdiWindowClose } from '@mdi/js';\nimport Websocket from 'ws';\nexport default {\n    components: {SvgIcon},\n    data() {\n        return {\n            table: [[-1, -1, -1],\n                    [-1, -1, -1],\n                    [-1, -1, -1]],\n            xIcon: mdiWindowClose,\n            oIcon: mdiCircleOutline,\n            prevTable: [[-1, -1, -1],\n                        [-1, -1, -1],\n                        [-1, -1, -1]],\n            turn: 0,\n            socket: undefined,\n            connected: false,\n        }\n    },\n    mounted() {\n        // check for query parameter to join websocket\n        // create lobby otherwise, show share link/popup info\n        this.socket = new WebSocket('ws://localhost:3001')\n        this.socket.onmessage = (event) => {\n            const message = JSON.parse(event.data);\n            console.log('message', message)\n            // Do things based on the event data\n        }\n        this.socket.onopen = (event) => {\n            console.log('opened', event)\n            this.connected = true\n            this.socket.send(JSON.stringify({message: 'sending to server'}))\n        }\n        this.socket.onclose = (event) => {\n            this.connected = false\n            console.log('connection closed')\n        }\n    },\n    methods: {\n        selectedItem(row, column) {\n            this.prevTable = this.table\n            if (this.table[row][column] === -1) {\n                this.table[row][column] = this.turn\n                this.turn = this.turn ? 0 : 1\n            } else {\n                alert('Invalid Move, Try again!')\n            }\n        },\n        restart() {\n            this.table = [[-1, -1, -1],\n                            [-1, -1, -1],\n                            [-1, -1, -1]]\n        }\n    }\n}\n</script>\n<style>\ntd {\n    height: 55px;\n    width: 55px;\n    padding: 8px;\n    position: relative;\n    vertical-align: top;\n    cursor: pointer;\n    -webkit-tap-highlight-color: transparent;\n}\ntd svg {\n    height: 92%;\n    width: 100%;\n}\ntable {\n  border-collapse: collapse;\n  border-style: hidden;\n}\ntable td {\n  border: 5px solid black;\n}\n\nbutton {\n    width: 100px;\n    cursor: pointer;\n    background: rgb(51, 51, 51);\n    color: rgb(255, 255, 255);\n    border-radius: 4px;\n    font-size: 0.875rem;\n    font-weight: bold;\n    min-height: 48px;\n}\n.tic-tac-toe-board {\n    padding: 48px;\n}\n</style>
+===================================================================
+diff --git a/pages/tictactoe.vue b/pages/tictactoe.vue
+--- a/pages/tictactoe.vue	
++++ b/pages/tictactoe.vue	
+@@ -1,13 +1,25 @@
+ <template>
+     <div class="home">
+         <h1>Welcome to tictactoe!</h1>
++        <h1>TIC-TAC-TOE</h1>
++        <h3>Pick who goes first?</h3>
++        <div class="SelectTurns">
++          <button class="custom-button" @click="handleButtonClick"></button>
++          <button class="custom-button2" @click="handleButtonClick"></button>
++
++        </div>
++
++      <h2>Player[X/O]'s turn </h2>
+         <div class="tic-tac-toe-board">
++
+             <table>
+                 <tbody>
+                     <tr v-for="(row, rowIndex) in table">
+                         <td v-for="(item, index) in row" @click="selectedItem(rowIndex, index)">
+-                            <svg-icon v-if="item === 1" type="mdi" :path="xIcon"></svg-icon>
+-                            <svg-icon v-if="item === 0" type="mdi" :path="oIcon"></svg-icon>
++                          <img v-if="item === 0" src="/Circle.png" alt="O Icon" width="41" height="41">
++                          <img v-if="item === 1" src="/Cross.png" alt="X Icon" width="41" height="41">
++                            <!--svg-icon v-if="item === 1" type="mdi" :path="xIcon"></svg-icon-->
++                            <!--svg-icon v-if="item === 0" type="mdi" :path="oIcon"></svg-icon-->
+                         </td>
+                     </tr>
+                 </tbody>
+@@ -109,4 +121,24 @@
+ .tic-tac-toe-board {
+     padding: 48px;
+ }
++.custom-button {
++  width: 100px; /* Set the width of the button */
++  height: 100px; /* Set the height of the button */
++  background-image: url('/CrossWhiteBackGround.png'); /* Set the background image */
++  background-size: cover; /* Ensure the background image covers the button */
++  background-color: white; /* Set the background color */
++  border: none; /* Remove button border */
++  cursor: pointer; /* Show pointer cursor on hover */
++}
++
++.custom-button2 {
++  width: 100px; /* Set the width of the button */
++  height: 100px; /* Set the height of the button */
++  background-image: url('/CircleWhiteBackGround.png'); /* Set the background image */
++  background-size: cover; /* Ensure the background image covers the button */
++  background-color: white; /* Set the background color */
++  border: none; /* Remove button border */
++  cursor: pointer; /* Show pointer cursor on hover */
++}
++
+ </style>
+\ No newline at end of file
