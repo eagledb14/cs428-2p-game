@@ -83,7 +83,7 @@ func handleRoutes(router *gin.Engine, socket *melody.Melody) {
 	})
 
 	//returns the type of game being hosted in a lobby
-	router.GET("lobby", func(c *gin.Context) {
+	router.GET("/lobby", func(c *gin.Context) {
 		lobbyID := c.Query("lobbyId")
 
 		//lobby id is required
