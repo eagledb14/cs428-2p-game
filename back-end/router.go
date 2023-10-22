@@ -60,24 +60,25 @@ func handleRoutes(router *gin.Engine, socket *melody.Melody) {
 	router.GET("/ws", func(c *gin.Context) {
 		lobbyID := c.Query("lobbyId")
 
-		//lobby id must be provided
-		if lobbyID != "" {
-			lobby, lobbyFound := lobbies.Get(lobbyID)
-			//make sure lobby exists
-			if lobbyFound {
-				//if game is not already in progress, upgrade http request to web socket
-				if !lobby.IsPlaying {
-					socket.HandleRequest(c.Writer, c.Request)
-				} else {
-					//if game is in progress, don't let client join
-					c.String(http.StatusOK, "Game already in progress")
-				}
-			} else {
-				c.String(http.StatusOK, "Lobby not found")
-			}
-		} else {
+		//lobby id is required
+		if lobbyID == "" {
 			c.String(http.StatusOK, "No lobby ID")
+			return
 		}
+
+		lobby, lobbyFound := lobbies.Get(lobbyID)
+
+		//return error msg is lobby doesn't exist of game is already in session
+		if !lobbyFound {
+			c.String(http.StatusOK, "Lobby not found")
+			return
+		} else if lobby.IsPlaying {
+			c.String(http.StatusOK, "Game already in progress")
+			return
+		}
+
+		//upgrade http connection to web socket
+		socket.HandleRequest(c.Writer, c.Request)
 	})
 	router.Run(":8080")
 }
