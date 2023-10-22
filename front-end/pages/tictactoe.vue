@@ -24,6 +24,8 @@
     </div>
 </template>
 <script>
+
+import axios from 'axios'; 
 import SvgIcon from '@jamescoyle/vue-icon';
 import { mdiCircleOutline, mdiWindowClose } from '@mdi/js';
 import Websocket from 'ws';
@@ -51,9 +53,9 @@ export default {
         // check for query parameter to join websocket
         // create lobby otherwise, show share link/popup info
         // We'll need to call something here to get the board/lobby once that is set up
-        // fetch('http://localhost:8080/tictactoe')
-        //     .then(response => response.json())
-        //     .then(data => console.log(data));
+        fetch('http://localhost:8080/tictactoe')
+            .then(response => response.json())
+            .then(data => console.log(data));
         this.socket = new WebSocket('ws://localhost:8080/ws?lobbyId=12345')
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
@@ -64,7 +66,8 @@ export default {
                 // ## BoardUpdate
                 // - params
                 // - ValidMove: bool
-                // - Opponent: int
+                // - PlayerMoveId: int
+                // - PlayerTurn: playerTurn,
                 // - isOver: bool 
                 // - Board: []int
                 this.table = this.convertBoard(message.board)
