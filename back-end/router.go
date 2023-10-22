@@ -8,11 +8,14 @@ import (
 
 	"github.com/eagledb14/cs428-2p-game/types"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	"gopkg.in/olahol/melody.v1"
 )
 
 // contains logic for all routes
 func handleRoutes(router *gin.Engine, socket *melody.Melody) {
+	router.Use(cors.Default())
+
 	//initializes a new lobby for a game or connects to an existing one if an id query is given
 	router.GET("/:game", func(c *gin.Context) {
 		id := c.Query("lobbyId")
