@@ -105,7 +105,7 @@ func handleRoutes(router *gin.Engine, socket *melody.Melody) {
 
 	})
 
-	router.Run(":8081")
+	router.Run(":8080")
 }
 
 func createLobbyID(c *gin.Context) string {
