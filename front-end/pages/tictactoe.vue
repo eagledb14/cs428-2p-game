@@ -20,12 +20,19 @@
             <h1 v-else-if="winner === -1">Tie Game!</h1>
             <h1 v-else>You loose!</h1>
         </div>
-        <button @click="restart()">restart</button>
+        <button v-if="isOver" @click="restart()">Play Again</button>
+        <button v-else @click="restart()">Restart</button>
+        <button @click="copyGameLink()" >Share Game</button>
+
+        <div>
+            <h1>X score: {{ this.score1 }}</h1>
+            <h1>O score: {{ this.score2 }}</h1>
+            <h1></h1>
+        </div>
+        <h1>Lobby ID: {{ this.lobbyId }}</h1>
     </div>
 </template>
 <script>
-
-import axios from 'axios'; 
 import SvgIcon from '@jamescoyle/vue-icon';
 import { mdiCircleOutline, mdiWindowClose } from '@mdi/js';
 import Websocket from 'ws';
@@ -47,16 +54,33 @@ export default {
             player: 0,
             isOver: false,
             winner: 0,
+            lobbyId: 0,
+            score1: 0,
+            score2: 0,
+            api: 'game.blackman.zip/api'
         }
     },
-    mounted() {
+    async mounted() {
         // check for query parameter to join websocket
         // create lobby otherwise, show share link/popup info
         // We'll need to call something here to get the board/lobby once that is set up
-        fetch('http://localhost:8080/tictactoe')
-            .then(response => response.json())
-            .then(data => console.log(data));
-        this.socket = new WebSocket('ws://localhost:8080/ws?lobbyId=12345')
+        if (this.$route.query.lobbyId) {
+            await fetch(`https://${this.api}/tictactoe?lobbyId=${this.$route.query.lobbyId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    this.lobbyId = this.$route.query.lobbyId
+                    this.table = this.convertBoard(data.board)
+                });
+        } else {
+            await fetch(`https://${this.api}/tictactoe`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    this.lobbyId = data
+                });
+        }
+        this.socket = new WebSocket(`ws://${this.api}/ws?lobbyId=${this.lobbyId}`)
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
             if (!this.player) {
@@ -71,9 +95,7 @@ export default {
                 // - isOver: bool 
                 // - Board: []int
                 this.table = this.convertBoard(message.board)
-                if (!message.isOver && !this.isOver) {
-                    this.turn = message.playerMoveId === 1 ? 2 : 1
-                } 
+                this.turn = message.playerTurn
                 this.winner = message.playerMoveId
                 this.isOver = message.isOver
             }
@@ -89,6 +111,17 @@ export default {
             console.log('connection closed')
         }
     },
+    watch: {
+        isOver() {
+            if(this.isOver) {
+                if (this.winner === 1) {
+                    this.score1++
+                } else if (this.winner === 2) {
+                    this.score2++
+                }
+            }
+        }
+    },
     methods: {
         selectedItem(row, column) {
             this.prevTable = this.table
@@ -102,10 +135,7 @@ export default {
                 this.socket.send(JSON.stringify({ Player: this.player, Reset: false, To: { X: row, Y: column }, From: { X: row, Y: column }}))
             }
         },
-        restart() {
-            this.table = [[0, 0, 0],
-                        [0, 0, 0],
-                        [0, 0, 0]]
+        restart() {  
             this.socket.send(JSON.stringify({ Player: this.player, Reset: true, To: { X: 0, Y: 0 }, From: { X: 0, Y: 0 }}))    
         },
         convertBoard(board) {
@@ -114,6 +144,9 @@ export default {
             table.push(board.slice(3, 6))
             table.push(board.slice(6, 9))
             return table
+        },
+        copyGameLink() {
+            navigator.clipboard.writeText(`${window.location.href}?lobbyId=${this.lobbyId}`);
         }
     }
 }
