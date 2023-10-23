@@ -80,7 +80,7 @@ export default {
                     this.lobbyId = data
                 });
         }
-        this.socket = new WebSocket(`ws://${this.api}/ws?lobbyId=${this.lobbyId}`)
+        this.socket = new WebSocket(`wss://${this.api}/ws?lobbyId=${this.lobbyId}`)
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
             if (!this.player) {
@@ -184,6 +184,6 @@ button {
     min-height: 48px;
 }
 .tic-tac-toe-board {
-    padding: 48px;
+    padding: 48px 0;
 }
 </style>
