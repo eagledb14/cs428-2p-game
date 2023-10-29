@@ -19,6 +19,7 @@
   "dependencies": {
     "@jamescoyle/vue-icon": "^0.1.2",
     "@mdi/js": "^7.3.67",
+    "cypress": "^13.3.3",
     "express": "^4.18.2",
     "ws": "^8.14.2"
   }
