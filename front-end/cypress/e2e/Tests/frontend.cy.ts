@@ -1,4 +1,5 @@
 import homePage from "../Pages/homePage";
+import tictactoe from "../Pages/tictactoePage";
 describe('Front Test', () => {
   beforeEach(() => {
     // Visit a specific URL
@@ -29,6 +30,13 @@ describe('Front Test', () => {
   it('should visit a specific URL and verify the URL', () => {
     homePage.Buttons.tictactoeGameButton().click()
     cy.url().should('eq', 'http://localhost:3000/tictactoe');
+    tictactoe.Page_elements.mainPage().should('exist')
+    tictactoe.Page_elements.gameBoard().should('exist')
+    tictactoe.Page_elements.heading1().should('contain', 'Welcome to tictactoe!');
+    tictactoe.Page_elements.scoreBoard().should('exist')
+    tictactoe.Page_elements.lobbyID().should('contain', 'Lobby ID:');
   });
-  
+
+
+
 });
