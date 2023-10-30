@@ -1,8 +1,8 @@
 <template>
     <div class="home">
-        <h1 v-if="!player">Welcome to tictactoe!</h1>
-        <h1 v-if="player === turn">Your turn</h1>
-        <h1 v-if="player && player !== turn">Waiting for opponent</h1>
+        <h1 v-if="!player || !connected">Share Game to Play</h1>
+        <h1 v-else-if="player === turn">Your turn</h1>
+        <h1 v-else-if="player && player !== turn">Waiting for opponent</h1>
         <div class="tic-tac-toe-board">
             <table>
                 <tbody>
@@ -20,14 +20,21 @@
             <h1 v-else-if="winner === -1">Tie Game!</h1>
             <h1 v-else>You loose!</h1>
         </div>
-        <button v-if="isOver" @click="restart()">Play Again</button>
-        <button v-else @click="restart()">Restart</button>
-        <button @click="copyGameLink()" >Share Game</button>
+        <div class="buttons">
+            <button v-if="isOver" @click="restart()">Play Again</button>
+            <button v-else @click="restart()">Restart</button>
+            <button @click="copyGameLink()" >Share Game</button>
+        </div>
 
-        <div>
-            <h1>X score: {{ this.score1 }}</h1>
-            <h1>O score: {{ this.score2 }}</h1>
-            <h1></h1>
+        <div class="scores">
+            <div class="score">
+                <svg-icon type="mdi" :path="xIcon"></svg-icon>
+                <span>: {{ this.score1 }}</span>
+            </div>
+            <div class="score">
+                <svg-icon type="mdi" :path="oIcon"></svg-icon>
+                <span>: {{ this.score2 }}</span>
+            </div>
         </div>
         <h1>Lobby ID: {{ this.lobbyId }}</h1>
     </div>
@@ -78,38 +85,11 @@ export default {
                 .then(data => {
                     console.log(data)
                     this.lobbyId = data
+                    // this.$router.replace({ query: { lobbyId: this.lobbyId} })
                 });
         }
-        this.socket = new WebSocket(`wss://${this.api}/ws?lobbyId=${this.lobbyId}`)
-        this.socket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            if (!this.player) {
-                this.player = message
-            } else if (message?.board && message?.validMove) {
-                // handle move event
-                // ## BoardUpdate
-                // - params
-                // - ValidMove: bool
-                // - PlayerMoveId: int
-                // - PlayerTurn: playerTurn,
-                // - isOver: bool 
-                // - Board: []int
-                this.table = this.convertBoard(message.board)
-                this.turn = message.playerTurn
-                this.winner = message.playerMoveId
-                this.isOver = message.isOver
-            }
-            console.log('message', message)
-            // Do things based on the event data
-        }
-        this.socket.onopen = (event) => {
-            console.log('opened', event)
-            this.connected = true
-        }
-        this.socket.onclose = (event) => {
-            this.connected = false
-            console.log('connection closed')
-        }
+
+        this.setupSocket()
     },
     watch: {
         isOver() {
@@ -123,6 +103,46 @@ export default {
         }
     },
     methods: {
+        setupSocket() {
+            this.socket = new WebSocket(`wss://${this.api}/ws?lobbyId=${this.lobbyId}`)
+            this.socket.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                if (!this.player) {
+                    this.player = message
+                } else if (message?.board && message?.validMove) {
+                    // handle move event
+                    // ## BoardUpdate
+                    // - params
+                    // - ValidMove: bool
+                    // - PlayerMoveId: int
+                    // - PlayerTurn: playerTurn,
+                    // - isOver: bool 
+                    // - Board: []int
+                    this.table = this.convertBoard(message.board)
+                    this.turn = message.playerTurn
+                    this.winner = message.playerMoveId
+                    this.isOver = message.isOver
+                }
+                console.log('message', message)
+                // Do things based on the event data
+            }
+            this.socket.onopen = (event) => {
+                console.log('opened', event)
+                this.connected = true
+            }
+            this.socket.onclose = async (event) => {
+                this.connected = false
+                console.log('connection closed')
+                // await fetch(`https://${this.api}/tictactoe`)
+                // .then(response => response.json())
+                // .then(data => {
+                //     console.log(data)
+                //     this.lobbyId = data
+                //     this.$router.replace({ query: { lobbyId: this.lobbyId} })
+                //     this.setupSocket()
+                // });
+            }
+        },
         selectedItem(row, column) {
             this.prevTable = this.table
             if (this.table[row][column] === 0 && this.turn === this.player) {
@@ -146,6 +166,7 @@ export default {
             return table
         },
         copyGameLink() {
+            // navigator.clipboard.writeText(window.location.href);
             navigator.clipboard.writeText(`${window.location.href}?lobbyId=${this.lobbyId}`);
         }
     }
@@ -185,5 +206,22 @@ button {
 }
 .tic-tac-toe-board {
     padding: 48px 0;
+}
+.score {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.scores {
+    justify-content: space-between;
+    display: flex;
+    width: 150px;
+    padding: 20px;
+}
+.buttons {
+    display: flex;
+}
+.buttons button {
+    margin: 10px;
 }
 </style>

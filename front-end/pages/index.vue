@@ -4,12 +4,12 @@
             Select a game below
         </h1>
         <div class="game-options">
-            <NuxtLink to="/checkers" class="game-icon"><img src="/checkers.jpg"></NuxtLink>
+            <!-- <NuxtLink to="/checkers" class="game-icon"><img src="/checkers.jpg"></NuxtLink> -->
             <NuxtLink to="/tictactoe" class="game-icon"><img src="/tictactoe.jpg"></NuxtLink>
         </div>
         <h1> or input a lobby ID</h1>
         <form @submit.prevent="joinLobby">
-            <input v-model="lobbyid" name="lobbyID" placeholder="Lobby ID" inputmode="numeric" autocomplete="off" >
+            <input v-model="lobbyId" name="lobbyID" placeholder="Lobby ID" inputmode="numeric" autocomplete="off" >
             <button class="submit-button" type="submit">Enter</button>
         </form>
     </div>
@@ -19,12 +19,27 @@
 export default {
     data() {
         return {
-            lobbyid: undefined
+            lobbyId: undefined,
+            api: 'game.blackman.zip/api',
         }
     },
     methods: {
-        joinLobby() {
-            console.log('join lobby with id: ', this.lobbyid)
+        async joinLobby() {
+            console.log('join lobby with id: ', this.lobbyId)
+            await fetch(`https://${this.api}/lobby?lobbyId=${this.lobbyId}`)
+                .then(response => response.text())
+                .then(response => {
+                    console.log(response)
+                    if (response === 'tictactoe') {
+                        console.log('push to tictactoe')
+                        navigateTo({
+                            path: '/tictactoe',
+                            query: {
+                                lobbyId: this.lobbyId
+                            }
+                        })
+                    }
+                })
         }
     }
 }
