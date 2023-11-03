@@ -49,10 +49,13 @@ func handleRoutes(router *gin.Engine, socket *melody.Melody) {
 			if !lobbyFound {
 				c.String(http.StatusOK, "Lobby not found")
 				return
-			} else if lobby.GameType != game {
+			} else if lobby.IsPlaying {
+				c.String(http.StatusOK, "Lobby already in play")
+				return
+			}else if lobby.GameType != game {
 				c.String(http.StatusOK, "Wrong game type")
 				return
-			}
+			} 
 
 			//create new board and send to frontend
 			json_update, _ := json.Marshal(board)
