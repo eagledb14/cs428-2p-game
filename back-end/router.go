@@ -89,11 +89,11 @@ func handleRoutes(router *gin.Engine, socket *melody.Melody) {
 
 func handleNewLobby(c *gin.Context, gameType string) {
 	lobby := types.NewLobby(gameType)
-	lobbyID := createLobbyID(c)
+	lobbyID := createLobbyID()
 
 	//loops until an unused lobby id is found
 	for _, ok := lobbies.Get(lobbyID); ok; _, ok = lobbies.Get(lobbyID) {
-		lobbyID = createLobbyID(c)
+		lobbyID = createLobbyID()
 	}
 
 	//add lobby with id to list and send id to frontend
@@ -126,7 +126,11 @@ func handleLobbyConnect(c *gin.Context, gameType string, lobbyId string, board t
 	c.String(http.StatusOK, string(json_update))
 }
 
-func createLobbyID(c *gin.Context) string {
-	lobbyID := strconv.Itoa(rand.Intn(999999))
-	return lobbyID
+func createLobbyID() string {
+	lobbyId := ""
+	for i := 0; i < 6; i++ {
+		lobbyId += strconv.Itoa(rand.Intn(10))
+	}
+
+	return lobbyId
 }
