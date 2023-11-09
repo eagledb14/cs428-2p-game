@@ -1,7 +1,7 @@
 package games
 
 import (
-	"fmt"
+	"github.com/eagledb14/cs428-2p-game/types"
 )
 
 const (
@@ -12,21 +12,47 @@ const (
 	cols      = 7
 )
 
-type Board struct {
-	board [][]int
-}
+func Fourinarow(lobby *types.Lobby) {
+	board := types.NewFourInARowBoard()
+	currentPlayer := 1
+	var row, col int
 
-func NewBoard() *Board {
-	board := make([][]int, rows)
-	for i := range board {
-		board[i] = make([]int, cols)
-	}
-	return &Board{board}
-}
+	for {
+		move, quit := validateMsg(lobby)
+		if quit {
+			return
+		}
 
-func (b *Board) Print() {
-	for _, row := range b.board {
-		fmt.Println(row)
+		if move.Reset {
+			board := types.NewFourInARowBoard()
+			SendUpdate(lobby, board, currentPlayer, currentPlayer, true, false)
+			continue
+		}
+
+		row, col = move.To.X, move.To.Y
+
+		if isMoveValid(board, row, col, currentPlayer, move.Player) {
+			board.Set(row, col, currentPlayer)
+
+			if isGameOver(board, row, col, currentPlayer) {
+				nextPlayer := ToggleRandomPlayer(2)
+				SendUpdate(lobby, board, currentPlayer, nextPlayer, true, true)
+				currentPlayer = nextPlayer
+				continue
+			}
+
+			if isBoardFull(board) {
+				nextPlayer := ToggleRandomPlayer(2)
+				SendUpdate(lobby, board, -1, nextPlayer, true, true)
+				currentPlayer = nextPlayer
+				continue
+			}
+
+			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
+			currentPlayer = togglePlayer(currentPlayer)
+		} else {
+			SendError(lobby, board, move, currentPlayer)
+		}
 	}
 }
 
@@ -84,43 +110,4 @@ func (b *Board) CheckWin(player int) bool {
 		}
 	}
 	return false
-}
-
-func main() {
-	board := NewBoard()
-	player := player1
-	winner := 0
-
-	fmt.Println("Welcome to Four-In-A-Row!")
-	board.Print()
-
-	for winner == 0 {
-		fmt.Printf("Player %d, choose a column (0-6): ", player)
-		var col int
-		fmt.Scanln(&col)
-
-		if col < 0 || col >= cols {
-			fmt.Println("Invalid column. Choose a column between 0 and 6.")
-			continue
-		}
-
-		if board.PlacePiece(col, player) {
-			board.Print()
-			if board.CheckWin(player) {
-				winner = player
-			} else if player == player1 {
-				player = player2
-			} else {
-				player = player1
-			}
-		} else {
-			fmt.Println("Column is full. Choose another column.")
-		}
-	}
-
-	if winner > 0 {
-		fmt.Printf("Player %d wins!\n", winner)
-	} else {
-		fmt.Println("It's a draw. The game is over.")
-	}
 }
