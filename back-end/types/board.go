@@ -16,6 +16,8 @@ func NewGame(gameType string) (Board, bool) {
 		return NewTicTacToeBoard(), true
 	case "checkers":
 		return NewCheckersBoard(), true
+	case "fourinarow":
+		return NewFourInARowBoard(), true
 	}
 
 	return NewBoard(0, 0), false
@@ -71,6 +73,10 @@ func NewCheckersBoard() Board {
 
 func NewTicTacToeBoard() Board {
 	return NewBoard(3, 3)
+}
+
+func NewFourInARowBoard() Board {
+	return NewBoard(6, 7)
 }
 
 func (b *Board) Set(x int, y int, value int) error {
