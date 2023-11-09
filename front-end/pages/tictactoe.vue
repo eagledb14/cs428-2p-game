@@ -18,7 +18,7 @@
         <div v-if="isOver" class="game-over">
             <h1 v-if="player === winner">You win!</h1>
             <h1 v-else-if="winner === -1">Tie Game!</h1>
-            <h1 v-else>You loose!</h1>
+            <h1 v-else>You lose!</h1>
         </div>
         <div class="buttons">
             <button v-if="isOver" @click="restart()">Play Again</button>
@@ -30,6 +30,9 @@
             <div class="score">
                 <svg-icon type="mdi" :path="xIcon"></svg-icon>
                 <span>: {{ this.score1 }}</span>
+            </div>
+            <div class="score">
+                <span>Ties: {{ this.ties }}</span>
             </div>
             <div class="score">
                 <svg-icon type="mdi" :path="oIcon"></svg-icon>
@@ -64,7 +67,9 @@ export default {
             lobbyId: 0,
             score1: 0,
             score2: 0,
-            api: 'game.blackman.zip/api'
+            ties: 0,
+            api: 'game.blackman.zip/api',
+            game: 'tictactoe'
         }
     },
     async mounted() {
@@ -72,7 +77,7 @@ export default {
         // create lobby otherwise, show share link/popup info
         // We'll need to call something here to get the board/lobby once that is set up
         if (this.$route.query.lobbyId) {
-            await fetch(`https://${this.api}/tictactoe?lobbyId=${this.$route.query.lobbyId}`)
+            await fetch(`https://${this.api}/${this.game}?lobbyId=${this.$route.query.lobbyId}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log(data)
@@ -80,7 +85,7 @@ export default {
                     this.table = this.convertBoard(data.board)
                 });
         } else {
-            await fetch(`https://${this.api}/tictactoe`)
+            await fetch(`https://${this.api}/${this.game}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log(data)
@@ -98,6 +103,8 @@ export default {
                     this.score1++
                 } else if (this.winner === 2) {
                     this.score2++
+                } else {
+                    this.ties++
                 }
             }
         }
@@ -144,7 +151,6 @@ export default {
             }
         },
         selectedItem(row, column) {
-            this.prevTable = this.table
             if (this.table[row][column] === 0 && this.turn === this.player) {
                 // ## Move
                 // - params
@@ -172,7 +178,7 @@ export default {
     }
 }
 </script>
-<style>
+<style scoped="true">
 td {
     height: 55px;
     width: 55px;
