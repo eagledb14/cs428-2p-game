@@ -79,6 +79,21 @@ func NewFourInARowBoard() Board {
 	return NewBoard(6, 7)
 }
 
+func NewOthelloBoard() Board {
+	othelloBoard := NewBoard(8,8)
+
+	//set black squares
+	othelloBoard.Set(3, 3, 2)
+	othelloBoard.Set(4, 4, 2)
+
+	//set white squares
+	othelloBoard.Set(3, 4, 1)
+	othelloBoard.Set(4, 3, 1)
+
+	return othelloBoard
+}
+
+
 func (b *Board) Set(x int, y int, value int) error {
 	index := x*b.column + y
 	if index >= len(b.Board) || y >= b.row {
