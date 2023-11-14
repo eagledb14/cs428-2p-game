@@ -22,7 +22,6 @@ func Othello(lobby *types.Lobby) {
 		row, col := move.To.X, move.To.Y
 
 		if isOthelloMoveValid(board, row, col, currentPlayer, move.Player) {
-			// board.Set(row, col, currentPlayer)
 			updateOthelloBoard(&board, row, col, currentPlayer)
 
 			if isOthelloOver(board) {
@@ -119,6 +118,25 @@ func countOthelloWinner(board types.Board) int {
 }
 
 func updateOthelloBoard(board *types.Board, row int, col int, currentPlayer int) {
+	otherPlayer := togglePlayer(currentPlayer)
 	board.Set(row, col, currentPlayer)
+	directions := []types.Point {
+		{X: row-1, Y: col-1},
+		{X: row, Y: col-1},  
+		{X: row+1, Y: col-1},
+		{X: row-1, Y: col},  
+		{X: row+1, Y: col},  
+		{X: row-1, Y: col+1},
+		{X: row, Y: col+1},  
+		{X: row+1, Y: col+1},
+	}
 
+	for _, dir := range(directions) {
+		point := types.NewPoint(row + dir.X, col + dir.Y) 
+
+		for piece, err := board.Get(point.X, point.Y); piece == otherPlayer && err != nil; {
+			board.Set(point.X, point.Y, currentPlayer)
+			point.AddPoint(dir)
+		}
+	}
 }
