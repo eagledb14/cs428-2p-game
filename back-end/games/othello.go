@@ -19,13 +19,13 @@ func Othello(lobby *types.Lobby) {
 			SendUpdate(lobby, board, currentPlayer, currentPlayer, true, false)
 			continue
 		}
-		row, col := move.To.X, move.To.Y
+		row, col := move.To.Y, move.To.X
 
 		if isOthelloMoveValid(board, row, col, currentPlayer, move.Player) {
 			updateOthelloBoard(&board, row, col, currentPlayer)
 
 			if isOthelloOver(board) {
-				nextPlayer := togglePlayer(2)
+				nextPlayer := togglePlayer(currentPlayer)
 				SendUpdate(lobby, board, countOthelloWinner(board), nextPlayer, true, true)
 				currentPlayer = nextPlayer
 				continue
@@ -59,23 +59,34 @@ func isOthelloMoveValid(board types.Board, row int, col int, currentPlayer int, 
 
 	otherPlayer := togglePlayer(currentPlayer)
 
-	for dx := -1; dx <= 1; dx++ {
-		for dy := -1; dy <= 1; dy++ {
-			if dx == 0 && dy == 0 {
-				continue
-			}
-				newX := row + dx
-        newY := col + dy
-
-        // Check bounds and then check for opponent's piece
-				
-			piece, _ := board.Get(newX, newY)
-			if newX >= 0 && newX < 7 && newY >= 0 && newY < 7 && 
-			piece == otherPlayer {
-				return true
-			}
-		}
+	directions := []types.Point{
+		{X: -1, Y: -1},
+		{X: 0, Y: -1}, 
+		{X: 1, Y: -1},
+		{X: -1, Y: 0}, 
+		{X: 1, Y: 0}, 
+		{X: -1, Y: 1},
+		{X: 0, Y: 1}, 
+		{X: 1, Y: 1},
 	}
+	
+	for _, dir := range directions {
+		x, y := row+dir.X, col+dir.Y
+		if piece, err := board.Get(x,y); err != nil || piece != otherPlayer {
+			continue
+		}
+
+		// Move in the direction while we see the other player's pieces
+		for piece, err := board.Get(x, y); err == nil && piece == otherPlayer; piece, err = board.Get(x, y) {
+			x += dir.X
+			y += dir.Y
+		}
+
+		// Check if we ended on a piece of the current player
+		if piece, err := board.Get(x, y); err == nil && piece == currentPlayer {
+			return true
+		}
+	    }
 
 	return false
 }
@@ -102,7 +113,7 @@ func countOthelloWinner(board types.Board) int {
 	count2 := 0
 
 	for i := 0; i <= 7; i++ {
-		for j := 0; i <= 7; j++ {
+		for j := 0; j <= 7; j++ {
 			if piece, _ := board.Get(i, j); piece == 1 {
 				count1++
 			} else if piece == 1 {
@@ -118,39 +129,39 @@ func countOthelloWinner(board types.Board) int {
 }
 
 func updateOthelloBoard(board *types.Board, row int, col int, currentPlayer int) {
-    otherPlayer := togglePlayer(currentPlayer)
-    board.Set(row, col, currentPlayer)
+	otherPlayer := togglePlayer(currentPlayer)
+	    board.Set(row, col, currentPlayer)
 
-    directions := []types.Point{
-        {X: -1, Y: -1},
-        {X: 0, Y: -1}, 
-        {X: 1, Y: -1},
-        {X: -1, Y: 0}, 
-        {X: 1, Y: 0}, 
-        {X: -1, Y: 1},
-        {X: 0, Y: 1}, 
-        {X: 1, Y: 1},
-    }
+	    directions := []types.Point{
+		{X: -1, Y: -1},
+		{X: 0, Y: -1}, 
+		{X: 1, Y: -1},
+		{X: -1, Y: 0}, 
+		{X: 1, Y: 0}, 
+		{X: -1, Y: 1},
+		{X: 0, Y: 1}, 
+		{X: 1, Y: 1},
+	    }
 
-    for _, dir := range directions {
-        x, y := row+dir.X, col+dir.Y
+	    for _, dir := range directions {
+		x, y := row+dir.X, col+dir.Y
 
-        // Track if there are pieces to flip in this direction
-        piecesToFlip := make([]types.Point, 0)
+		// Track if there are pieces to flip in this direction
+		piecesToFlip := make([]types.Point, 0)
 
-        // Move in the direction while we see the other player's pieces
-        for piece, err := board.Get(x, y); err == nil && piece == otherPlayer; piece, err = board.Get(x, y) {
-            piecesToFlip = append(piecesToFlip, types.Point{X: x, Y: y})
-            x += dir.X
-            y += dir.Y
-        }
+		// Move in the direction while we see the other player's pieces
+		for piece, err := board.Get(x, y); err == nil && piece == otherPlayer; piece, err = board.Get(x, y) {
+			piecesToFlip = append(piecesToFlip, types.Point{X: x, Y: y})
+			x += dir.X
+			y += dir.Y
+		}
 
-        // Check if we ended on a piece of the current player
-        if piece, err := board.Get(x, y); err == nil && piece == currentPlayer {
-            // Flip the pieces
-            for _, p := range piecesToFlip {
-                board.Set(p.X, p.Y, currentPlayer)
-            }
-        }
-    }
+		// Check if we ended on a piece of the current player
+		if piece, err := board.Get(x, y); err == nil && piece == currentPlayer {
+			// Flip the pieces
+			for _, p := range piecesToFlip {
+				board.Set(p.X, p.Y, currentPlayer)
+			}
+		}
+	    }
 }
