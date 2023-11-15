@@ -85,11 +85,11 @@ func NewOthelloBoard() Board {
 	othelloBoard := NewBoard(8,8)
 
 	//set black squares
-	othelloBoard.Set(3, 3, 2)
-	othelloBoard.Set(4, 4, 2)
+	othelloBoard.Set(3, 3, 1)
+	othelloBoard.Set(4, 4, 1)
 
 	//set white squares
-	othelloBoard.Set(3, 4, 1)
+	othelloBoard.Set(3, 4, 2)
 	othelloBoard.Set(4, 3, 1)
 
 	return othelloBoard
