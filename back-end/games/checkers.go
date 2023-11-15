@@ -23,6 +23,12 @@ func Checkers(lobby *types.Lobby) {
 
 		fromRow, toRow, fromCol, toCol = move.From.X, move.To.X, move.From.Y, move.To.Y
 
+		//if move was a request for possible moves, send update with board showing possible moves
+		//without ending the player's turn
+		if move.GetMoves {
+			SendUpdate(lobby, getPossibleMoves(board, fromCol, fromRow), currentPlayer, currentPlayer, true, false)
+		}
+
 		if isCheckersMoveValid(board, fromCol, toCol, fromRow, toRow, currentPlayer, move.Player) {
 			pieceValue, _ := board.Get(fromCol, fromRow)
 
@@ -55,120 +61,78 @@ func Checkers(lobby *types.Lobby) {
 
 }
 
+func getPossibleMoves(board types.Board, currentCol, currentRow int) types.Board {
+	possibleMovesBoard := types.NewCheckersBoard()
+	selectedPiece, _ := board.Get(currentCol, currentRow)
+
+	//normal pieces will only use the first check (red) or the second (black), but king pieces will use both
+	if (selectedPiece == 1 || selectedPiece > 2) && currentCol != 0 {
+		forwardLeft, _ := board.Get(currentCol-1, currentRow-1)
+		forwardRight, _ := board.Get(currentCol-1, currentRow+1)
+		jumpLeft, _ := board.Get(currentCol-2, currentRow-2)
+		jumpRight, _ := board.Get(currentCol-2, currentRow+2)
+
+		//if forward left is empty and in bounds, it can be moved to but not jumped
+		if currentRow != 0 && forwardLeft == 0 {
+			possibleMovesBoard.Set(currentCol-1, currentRow-1, 5)
+		} else if forwardLeft == 2 && jumpLeft == 0 && currentCol > 1 && currentRow > 1 {
+			//if it is occupied by an opponent piece and the space behind it is empty and in-bounds, it can be jumped
+			possibleMovesBoard.Set(currentCol-2, currentRow-2, 5)
+		}
+
+		if currentRow != 7 && forwardRight == 0 {
+			possibleMovesBoard.Set(currentCol-1, currentRow+1, 5)
+		} else if forwardRight == 2 && jumpRight == 0 && currentCol > 1 && currentRow < 6 {
+			possibleMovesBoard.Set(currentCol-2, currentRow+2, 5)
+		}
+	}
+
+	if selectedPiece >= 2 && currentCol != 7 {
+		forwardLeft, _ := board.Get(currentCol+1, currentRow-1)
+		forwardRight, _ := board.Get(currentCol+1, currentRow+1)
+		jumpLeft, _ := board.Get(currentCol+2, currentRow-2)
+		jumpRight, _ := board.Get(currentCol+2, currentRow+2)
+
+		if currentRow != 0 && forwardLeft == 0 {
+			possibleMovesBoard.Set(currentCol+1, currentRow-1, 5)
+		} else if forwardLeft == 2 && jumpLeft == 0 && currentCol < 6 && currentRow > 1 {
+			possibleMovesBoard.Set(currentCol+2, currentRow-2, 5)
+		}
+
+		if currentRow != 7 && forwardRight == 0 {
+			possibleMovesBoard.Set(currentCol+1, currentRow+1, 5)
+		} else if forwardRight == 2 && jumpRight == 0 && currentCol < 6 && currentRow < 6 {
+			possibleMovesBoard.Set(currentCol+2, currentRow+2, 5)
+		}
+	}
+
+	return possibleMovesBoard
+}
+
 func isCheckersMoveValid(board types.Board, fromCol, toCol, fromRow, toRow, currentPlayer, playerWhoMoved int) bool {
 	if currentPlayer != playerWhoMoved {
 		return false
 	}
 
-	//each row and col parameter must correspond to one of the 8 rows and cols
+	//each row and col parameter must be in-bounds
 	if fromRow > 7 || fromRow < 0 || toRow > 7 || toRow < 0 || fromCol > 7 || fromCol < 0 || toCol > 7 || toCol < 0 {
 		return false
 	}
 
-	//will return -1 if coordinates are out of bounds
 	selectedPiece, _ := board.Get(fromCol, fromRow)
-	destination, _ := board.Get(toCol, toRow)
-
-	//selected space must be in-bounds and have a piece, destination must be in-bounds and empty
-	if selectedPiece < 1 || destination != 0 {
-		return false
-	}
 
 	//piece should either have same value as player (normal piece) or two greater (king piece)
 	if selectedPiece != playerWhoMoved && selectedPiece != playerWhoMoved+2 {
 		return false
 	}
 
-	if selectedPiece == 1 {
-		//move check for normal red pieces
-		if toCol >= fromCol || toCol < fromCol-2 {
-			//cannot move backwards, stay in current column, or move more than two columns forwards
-			return false
-		} else if toCol == fromCol-1 && !(toRow == fromRow+1 || toRow == fromRow-1) {
-			//destination being one column forward from origin indicates normal move,
-			//in which case the destination row must be 1 less or greater than origin
-			return false
-		} else if toCol == fromCol-2 {
-			//execution will only reach here if destination is two columns forward from origin, indicating a jump move
-			var jumpedSpace int
+	//use the possible moves function to check if the attempted destination is valid
+	possibleMovesBoard := getPossibleMoves(board, fromCol, fromRow)
+	destination, _ := possibleMovesBoard.Get(toCol, toRow)
 
-			//when jumping, the destination row must be two greater or less than the origin row
-			if toRow == fromRow+2 {
-				jumpedSpace, _ = board.Get(fromCol-1, fromRow+1)
-			} else if toRow == fromRow-2 {
-				jumpedSpace, _ = board.Get(fromCol-1, fromRow-1)
-			} else {
-				return false
-			}
-
-			//space being jumped must contain either a normal piece or king piece from black team
-			if !(jumpedSpace == 2 || jumpedSpace == 4) {
-				return false
-			}
-		}
-	} else if selectedPiece == 2 {
-		//move check for normal black pieces
-		if toCol <= fromCol || toCol > fromCol+2 {
-			//cannot move backwards, stay in current column, or move more than two columns forwards
-			return false
-		} else if toCol == fromCol+1 && !(toRow == fromRow+1 || toRow == fromRow-1) {
-			//destination being one column forward from origin indicates normal move,
-			//in which case the destination row must be 1 less or greater than origin
-			return false
-		} else if toCol == fromCol+2 {
-			//execution will only reach here if destination is two columns forward from origin, indicating a jump move
-			var jumpedSpace int
-
-			//when jumping, the destination row must be two greater or less than the origin row
-			if toRow == fromRow+2 {
-				jumpedSpace, _ = board.Get(fromCol+1, fromRow+1)
-			} else if toRow == fromRow-2 {
-				jumpedSpace, _ = board.Get(fromCol+1, fromRow-1)
-			} else {
-				return false
-			}
-
-			//space being jumped must contain either a normal piece or king piece from red team
-			if !(jumpedSpace == 1 || jumpedSpace == 3) {
-				return false
-			}
-		}
-
-	} else {
-		//move check for any king piece
-		if toCol > fromCol+2 || toCol < fromCol-2 {
-			//cannot stay in current column, or move more than two columns forwards or backwards
-			return false
-		} else if (toCol == fromCol-1 || toCol == fromCol+1) && !(toRow == fromRow+1 || toRow == fromRow-1) {
-			//destination being one column forward or back from origin indicates normal move,
-			//in which case the destination row must be 1 less or greater than origin
-			return false
-		} else if toCol == fromCol-2 || toCol == fromCol+2 {
-			//execution will only reach here if destination is two columns forward or back from origin, indicating a jump move
-			var jumpedSpace int
-
-			//there are four possible spaces a king could be jumping to at any time,
-			//so the destination must have the coordinates of one of those four
-			if toCol == fromCol+2 && toRow == fromRow+2 {
-				jumpedSpace, _ = board.Get(fromCol+1, fromRow+1)
-			} else if toCol == fromCol+2 && toRow == fromRow-2 {
-				jumpedSpace, _ = board.Get(fromCol+1, fromRow-1)
-			} else if toCol == fromCol-2 && toRow == fromRow+2 {
-				jumpedSpace, _ = board.Get(fromCol-1, fromRow+1)
-			} else if toCol == fromCol-2 && toRow == fromRow-2 {
-				jumpedSpace, _ = board.Get(fromCol-1, fromRow-1)
-			} else {
-				return false
-			}
-
-			//space being jumped must contain either a normal piece or king piece from oopposing team
-			if jumpedSpace == 0 || jumpedSpace%2 == playerWhoMoved%2 {
-				return false
-			}
-		}
-	}
-
-	return true
+	//if destination is valid, it will be marked on the board as a possible move by the number 5
+	//if it is anything else, the move is invalid
+	return destination == 5
 }
 
 func shouldPieceBePromoted(pieceValue, destCol int) bool {

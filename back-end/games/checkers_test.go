@@ -85,7 +85,7 @@ func TestGetJumpedPiece(t *testing.T) {
 	assert.True(t, jumpedValue == 2)
 }
 
-func TestPromoteTeam1(t *testing.T) {
+func TestPromotePieces(t *testing.T) {
 	//try to promote a normal red piece in the correct place -- should return true
 	value1 := shouldPieceBePromoted(1, 0)
 	//try to promote a normal black piece in the correct place -- should return true
