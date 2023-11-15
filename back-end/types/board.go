@@ -18,6 +18,8 @@ func NewGame(gameType string) (Board, bool) {
 		return NewCheckersBoard(), true
 	case "fourinarow":
 		return NewFourInARowBoard(), true
+	case "othello":
+		return NewOthelloBoard(), true
 	}
 
 	return NewBoard(0, 0), false
