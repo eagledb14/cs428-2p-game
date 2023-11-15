@@ -90,7 +90,7 @@ func NewOthelloBoard() Board {
 
 	//set white squares
 	othelloBoard.Set(3, 4, 2)
-	othelloBoard.Set(4, 3, 1)
+	othelloBoard.Set(4, 3, 2)
 
 	return othelloBoard
 }
