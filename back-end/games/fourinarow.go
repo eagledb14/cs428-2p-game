@@ -36,41 +36,60 @@ func Print(b *types.Board) {
 
 func Fourinarow(lobby *types.Lobby) {
 	board := types.NewFourInARowBoard()
-	player := player1
+	currentPlayer := player1
 	winner := 0
 
-	fmt.Println("Welcome to Four-In-A-Row!")
-	PrintBoard(&board)
+	// fmt.Println("Welcome to Four-In-A-Row!")
+	// PrintBoard(&board)
 
-	for winner == 0 {
-		fmt.Printf("Player %d, choose a column (0-6): ", player)
-		var col int
-		fmt.Scanln(&col)
+	for {
+		move, quit := validateMsg(lobby)
+		if quit {
+			return
+		}
 
-		if col < 0 || col >= cols {
-			fmt.Println("Invalid column. Choose a column between 0 and 6.")
+		if move.Reset {
+			board = types.NewFourInARowBoard()
+			SendUpdate(lobby, board, currentPlayer, currentPlayer, true, false)
 			continue
 		}
-		board, piecePlaced := PlacePiece(board, col, player)
+
+		// fmt.Printf("Player %d, choose a column (0-6): ", currentPlayer)
+		var col int = move.To.X
+
+		if col < 0 || col >= cols {
+			// fmt.Println("Invalid column. Choose a column between 0 and 6.")
+			continue
+		}
+
+		board, piecePlaced := PlacePiece(board, col, currentPlayer)
 
 		if piecePlaced {
-			PrintBoard(&board)
-			if CheckWin(&board, player) {
-				winner = player
-			} else if player == player1 {
-				player = player2
+			// PrintBoard(&board)
+			if CheckWin(&board, currentPlayer) {
+				winner = currentPlayer
+			} else if currentPlayer == player1 {
+				currentPlayer = player2
 			} else {
-				player = player1
+				currentPlayer = player1
 			}
 		} else {
-			fmt.Println("Column is full. Choose another column.")
+			// fmt.Println("Column is full. Choose another column.")
+			SendError(lobby, board, move, currentPlayer)
 		}
-	}
+		if winner != 0 {
+			var nextPlayer int
 
-	if winner > 0 {
-		fmt.Printf("Player %d wins!\n", winner)
-	} else {
-		fmt.Println("It's a draw. The game is over.")
+			if winner > 0 {
+				// fmt.Printf("Player %d wins!\n", winner)
+				nextPlayer = ToggleRandomPlayer(2)
+				SendUpdate(lobby, board, currentPlayer, nextPlayer, true, true)
+			} else {
+				// fmt.Println("It's a draw. The game is over.")
+				nextPlayer = ToggleRandomPlayer(2)
+				SendUpdate(lobby, board, -1, nextPlayer, true, true)
+			}
+		}
 	}
 }
 
