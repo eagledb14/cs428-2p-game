@@ -27,6 +27,7 @@ func Checkers(lobby *types.Lobby) {
 		//without ending the player's turn
 		if move.GetMoves {
 			SendUpdate(lobby, getPossibleMoves(board, fromCol, fromRow), currentPlayer, currentPlayer, true, false)
+			continue
 		}
 
 		if isCheckersMoveValid(board, fromCol, toCol, fromRow, toRow, currentPlayer, move.Player) {
