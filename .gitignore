@@ -2,5 +2,6 @@ go.sum
 .nuxt
 node_modules
 .vscode
+.idea
 --host
 cs428-2p-game
