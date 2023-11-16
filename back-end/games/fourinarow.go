@@ -51,10 +51,10 @@ func Fourinarow(lobby *types.Lobby) {
 		if winner != 0 {
 			var nextPlayer int
 
-			if winner > 0 {
+			if winner > 0 { // Game won
 				nextPlayer = ToggleRandomPlayer(2)
 				SendUpdate(lobby, board, currentPlayer, nextPlayer, true, true)
-			} else {
+			} else { // Draw game
 				nextPlayer = ToggleRandomPlayer(2)
 				SendUpdate(lobby, board, -1, nextPlayer, true, true)
 			}
@@ -62,28 +62,35 @@ func Fourinarow(lobby *types.Lobby) {
 	}
 }
 
+// PlacePiece places a piece on the board at the specified column for the given player.
+// It returns the updated board and a boolean indicating whether the placement was successful.
 func PlacePiece(board types.Board, column, player int) (types.Board, bool) {
-	rows, err := board.Get(0, 0)
+	// Get the number of rows on the board
+	numRows, err := board.Get(0, 0)
 	if err != nil {
 		return board, false
 	}
 
-	if column < 0 || column >= rows {
+	// Check if the column index is out of bounds
+	if column < 0 || column >= cols {
 		return board, false
 	}
 
-	for row := rows - 1; row >= 0; row-- {
-		value, err := board.Get(row, column)
+	// Iterate over rows to find the first empty cell in the specified column
+	for row := numRows - 1; row >= 0; row-- {
+		cellValue, err := board.Get(row, column)
 		if err != nil {
 			return board, false
 		}
 
-		if value == emptyCell {
+		// If the cell is empty, place the piece and return the updated board
+		if cellValue == emptyCell {
 			board.Set(row, column, player)
 			return board, true
 		}
 	}
 
+	// If no empty cell is found in the column, return the original board and indicate failure
 	return board, false
 }
 
