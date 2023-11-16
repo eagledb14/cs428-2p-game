@@ -16,6 +16,10 @@ func NewGame(gameType string) (Board, bool) {
 		return NewTicTacToeBoard(), true
 	case "checkers":
 		return NewCheckersBoard(), true
+	case "fourinarow":
+		return NewFourInARowBoard(), true
+	case "othello":
+		return NewOthelloBoard(), true
 	}
 
 	return NewBoard(0, 0), false
@@ -90,9 +94,28 @@ func NewTicTacToeBoard() Board {
 	return NewBoard(3, 3)
 }
 
+func NewFourInARowBoard() Board {
+	return NewBoard(6, 7)
+}
+
+func NewOthelloBoard() Board {
+	othelloBoard := NewBoard(8,8)
+
+	//set black squares
+	othelloBoard.Set(3, 3, 1)
+	othelloBoard.Set(4, 4, 1)
+
+	//set white squares
+	othelloBoard.Set(3, 4, 2)
+	othelloBoard.Set(4, 3, 2)
+
+	return othelloBoard
+}
+
+
 func (b *Board) Set(x int, y int, value int) error {
 	index := x*b.column + y
-	if index >= len(b.Board) || y >= b.row {
+	if index >= len(b.Board) || y >= b.row || x >= b.column || x < 0 || y < 0 {
 		return errors.New("Out of bounds Index")
 	}
 
@@ -102,7 +125,7 @@ func (b *Board) Set(x int, y int, value int) error {
 
 func (b *Board) Get(x int, y int) (int, error) {
 	index := x*b.column + y
-	if index >= len(b.Board) || y >= b.row {
+	if index >= len(b.Board) || y >= b.row || x >= b.column || x < 0 || y < 0 {
 		return 0, errors.New("Out of bounds Index")
 	}
 

@@ -21,3 +21,8 @@ func NewPoint(x int, y int) Point {
 		Y: y,
 	}
 }
+
+func (p *Point) AddPoint(point Point) {
+  p.X += point.X
+  p.Y += point.Y
+}
