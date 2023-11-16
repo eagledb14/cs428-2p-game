@@ -36,8 +36,6 @@ func Othello(lobby *types.Lobby) {
 		} else {
 			SendError(lobby, board, move, currentPlayer)
 		}
-
-
 	}
 }
 
@@ -47,13 +45,8 @@ func isOthelloMoveValid(board types.Board, row int, col int, currentPlayer int, 
 		return false
 	}
 
-	//checking move bounds
-	if row < 0 || row > 7 || col < 0 || col > 7 {
-		return false
-	}
-
-	//check if piece is empty
-	if piece, _ := board.Get(row, col); piece != 0 {
+	//check if piece is empty and move bounds
+	if piece, err := board.Get(row, col); piece != 0 || err != nil {
 		return false
 	}
 
@@ -86,7 +79,7 @@ func isOthelloMoveValid(board types.Board, row int, col int, currentPlayer int, 
 		if piece, err := board.Get(x, y); err == nil && piece == currentPlayer {
 			return true
 		}
-	    }
+	}
 
 	return false
 }
@@ -132,18 +125,18 @@ func updateOthelloBoard(board *types.Board, row int, col int, currentPlayer int)
 	otherPlayer := togglePlayer(currentPlayer)
 	    board.Set(row, col, currentPlayer)
 
-	    directions := []types.Point{
-		{X: -1, Y: -1},
-		{X: 0, Y: -1}, 
-		{X: 1, Y: -1},
-		{X: -1, Y: 0}, 
-		{X: 1, Y: 0}, 
-		{X: -1, Y: 1},
-		{X: 0, Y: 1}, 
-		{X: 1, Y: 1},
-	    }
+		directions := []types.Point{
+			{X: -1, Y: -1},
+			{X: 0, Y: -1}, 
+			{X: 1, Y: -1},
+			{X: -1, Y: 0}, 
+			{X: 1, Y: 0}, 
+			{X: -1, Y: 1},
+			{X: 0, Y: 1}, 
+			{X: 1, Y: 1},
+		}
 
-	    for _, dir := range directions {
+	for _, dir := range directions {
 		x, y := row+dir.X, col+dir.Y
 
 		// Track if there are pieces to flip in this direction
@@ -163,5 +156,5 @@ func updateOthelloBoard(board *types.Board, row int, col int, currentPlayer int)
 				board.Set(p.X, p.Y, currentPlayer)
 			}
 		}
-	    }
+	}
 }
