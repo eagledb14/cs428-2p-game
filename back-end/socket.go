@@ -46,7 +46,7 @@ func handleConnect(s *melody.Session) {
   case "tictactoe":
     go games.Tictactoe(lobby)
   case "checkers":
-    go testGame(lobby)
+    go games.Checkers(lobby)
   case "othello":
     go games.Othello(lobby)
   default:

@@ -23,7 +23,7 @@ func Tictactoe(lobby *types.Lobby) {
 
 		row, col = move.To.X, move.To.Y
 
-		if isMoveValid(board, row, col, currentPlayer, move.Player) {
+		if isTicTacToeMoveValid(board, row, col, currentPlayer, move.Player) {
 			board.Set(row, col, currentPlayer)
 
 			if isGameOver(board, row, col, currentPlayer) {
@@ -48,7 +48,7 @@ func Tictactoe(lobby *types.Lobby) {
 	}
 }
 
-func isMoveValid(board types.Board, row, col int, currentPlayer int, playerWhoMoved int) bool {
+func isTicTacToeMoveValid(board types.Board, row, col int, currentPlayer int, playerWhoMoved int) bool {
 	if currentPlayer != playerWhoMoved {
 		return false
 	}

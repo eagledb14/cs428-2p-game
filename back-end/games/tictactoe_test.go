@@ -52,7 +52,7 @@ func TestIsMoveValid(t *testing.T) {
 
 	for _, move := range validMoves {
 		row, col := move[0], move[1]
-		assert.True(t, isMoveValid(board, row, col, currentPlayer, playerWhoMoved))
+		assert.True(t, isTicTacToeMoveValid(board, row, col, currentPlayer, playerWhoMoved))
 		board.Set(row, col, currentPlayer) // Simulate setting a piece
 	}
 
@@ -68,7 +68,7 @@ func TestIsMoveValid(t *testing.T) {
 
 	for _, move := range invalidMoves {
 		row, col := move[0], move[1]
-		assert.False(t, isMoveValid(board, row, col, currentPlayer, playerWhoMoved))
+		assert.False(t, isTicTacToeMoveValid(board, row, col, currentPlayer, playerWhoMoved))
 	}
 }
 
