@@ -1,8 +1,6 @@
 package games
 
 import (
-	"fmt"
-
 	"github.com/eagledb14/cs428-2p-game/types"
 )
 
@@ -14,33 +12,10 @@ const (
 	cols      = 7
 )
 
-func PrintBoard(b *types.Board) {
-	for _, row := range b.Board {
-		fmt.Println(row)
-	}
-}
-
-func Print(b *types.Board) {
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
-			value, err := b.Get(i, j)
-			if err != nil {
-				fmt.Println("Error:", err)
-				return
-			}
-			fmt.Print(value, " ")
-		}
-		fmt.Println()
-	}
-}
-
 func Fourinarow(lobby *types.Lobby) {
 	board := types.NewFourInARowBoard()
 	currentPlayer := player1
 	winner := 0
-
-	// fmt.Println("Welcome to Four-In-A-Row!")
-	// PrintBoard(&board)
 
 	for {
 		move, quit := validateMsg(lobby)
@@ -54,18 +29,15 @@ func Fourinarow(lobby *types.Lobby) {
 			continue
 		}
 
-		// fmt.Printf("Player %d, choose a column (0-6): ", currentPlayer)
 		var col int = move.To.X
 
 		if col < 0 || col >= cols {
-			// fmt.Println("Invalid column. Choose a column between 0 and 6.")
 			continue
 		}
 
 		board, piecePlaced := PlacePiece(board, col, currentPlayer)
 
 		if piecePlaced {
-			// PrintBoard(&board)
 			if CheckWin(&board, currentPlayer) {
 				winner = currentPlayer
 			} else if currentPlayer == player1 {
@@ -74,18 +46,15 @@ func Fourinarow(lobby *types.Lobby) {
 				currentPlayer = player1
 			}
 		} else {
-			// fmt.Println("Column is full. Choose another column.")
 			SendError(lobby, board, move, currentPlayer)
 		}
 		if winner != 0 {
 			var nextPlayer int
 
 			if winner > 0 {
-				// fmt.Printf("Player %d wins!\n", winner)
 				nextPlayer = ToggleRandomPlayer(2)
 				SendUpdate(lobby, board, currentPlayer, nextPlayer, true, true)
 			} else {
-				// fmt.Println("It's a draw. The game is over.")
 				nextPlayer = ToggleRandomPlayer(2)
 				SendUpdate(lobby, board, -1, nextPlayer, true, true)
 			}
