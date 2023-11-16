@@ -116,7 +116,7 @@ func countOthelloWinner(board types.Board) int {
 		for j := 0; j <= 7; j++ {
 			if piece, _ := board.Get(i, j); piece == 1 {
 				count1++
-			} else if piece == 1 {
+			} else if piece == 2 {
 				count2++
 			}
 		}
