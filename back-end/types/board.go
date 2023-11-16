@@ -36,7 +36,12 @@ func NewBoard(row int, column int) Board {
 func NewCheckersBoard() Board {
 	checkersBoard := NewBoard(8, 8)
 
-	//set up blacks side,
+	//spaces on the board that cannot have a piece on them are marked with -1
+	for i := range checkersBoard.Board {
+		checkersBoard.Board[i] = -1
+	}
+
+	//set black team pieces
 	//1, 3, 5, 7
 	checkersBoard.Set(0, 1, 2)
 	checkersBoard.Set(0, 3, 2)
@@ -53,7 +58,19 @@ func NewCheckersBoard() Board {
 	checkersBoard.Set(2, 5, 2)
 	checkersBoard.Set(2, 7, 2)
 
-	//set up red side
+	//set blank spaces in middle of board
+	//0, 2, 4, 6
+	checkersBoard.Set(3, 0, 0)
+	checkersBoard.Set(3, 2, 0)
+	checkersBoard.Set(3, 4, 0)
+	checkersBoard.Set(3, 6, 0)
+	//1, 3, 5, 7
+	checkersBoard.Set(4, 1, 0)
+	checkersBoard.Set(4, 3, 0)
+	checkersBoard.Set(4, 5, 0)
+	checkersBoard.Set(4, 7, 0)
+
+	//set red team pieces
 	//0, 2, 4, 6
 	checkersBoard.Set(5, 0, 1)
 	checkersBoard.Set(5, 2, 1)
