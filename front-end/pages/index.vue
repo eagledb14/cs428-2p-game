@@ -4,8 +4,10 @@
             Select a game below
         </h1>
         <div class="game-options">
-            <!-- <NuxtLink to="/checkers" class="game-icon"><img src="/checkers.jpg"></NuxtLink> -->
+            <NuxtLink to="/checkers" class="game-icon"><img src="/checkers.jpg"></NuxtLink>
             <NuxtLink to="/tictactoe" class="game-icon"><img src="/tictactoe.jpg"></NuxtLink>
+          <NuxtLink to="/connectFour" class="game-icon"><img src="/Connect_Four_icon_and_logo.png"></NuxtLink>
+
         </div>
         <h1> or input a lobby ID</h1>
         <form @submit.prevent="joinLobby">
