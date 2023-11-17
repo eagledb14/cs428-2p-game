@@ -26,15 +26,13 @@ func Othello(lobby *types.Lobby) {
 		if isOthelloMoveValid(board, row, col, currentPlayer, move.Player) {
 			updateOthelloBoard(&board, row, col, currentPlayer)
 
-			if isOthelloOver(board) {
-				fmt.Println("is over")
+			if isOthelloOver(board, currentPlayer) {
 				nextPlayer := ToggleRandomPlayer(2)
 				SendUpdate(lobby, board, countOthelloWinner(board), nextPlayer, true, true)
 				currentPlayer = nextPlayer
 				continue
 			}
 
-			fmt.Println("playing")
 			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
 			currentPlayer = togglePlayer(currentPlayer)
 		} else {
@@ -88,13 +86,13 @@ func isOthelloMoveValid(board types.Board, row int, col int, currentPlayer int, 
 	return false
 }
 
-func isOthelloOver(board types.Board) bool {
+func isOthelloOver(board types.Board, currentPlayer int) bool {
 
 	//checks the whole board, if the place is empty, check if a move can be made, it not then return
 	for i := 0; i <= 7; i++ {
 		for j := 0; j <= 7; j++ {
 			if piece, _ := board.Get(i, j); piece == 0 {
-				if isOthelloMoveValid(board, i, j, 1, 1) || isOthelloMoveValid(board, i, j, 2, 2) {
+				if isOthelloMoveValid(board, i, j, currentPlayer, currentPlayer) {
 					return false
 				} 
 			}
