@@ -1,8 +1,6 @@
 package games
 
 import (
-	"fmt"
-
 	"github.com/eagledb14/cs428-2p-game/types"
 )
 

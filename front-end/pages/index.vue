@@ -7,6 +7,7 @@
             <NuxtLink to="/checkers" class="game-icon"><img src="/checkers.jpg"></NuxtLink>
             <NuxtLink to="/tictactoe" class="game-icon"><img src="/tictactoe.jpg"></NuxtLink>
           <NuxtLink to="/connectFour" class="game-icon"><img src="/Connect_Four_icon_and_logo.png"></NuxtLink>
+          <NuxtLink to="/othello" class="game-icon"><img src="/othello_icon.png"></NuxtLink>
 
         </div>
         <h1> or input a lobby ID</h1>
