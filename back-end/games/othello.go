@@ -1,6 +1,8 @@
 package games
 
 import (
+	"fmt"
+
 	"github.com/eagledb14/cs428-2p-game/types"
 )
 
@@ -25,12 +27,14 @@ func Othello(lobby *types.Lobby) {
 			updateOthelloBoard(&board, row, col, currentPlayer)
 
 			if isOthelloOver(board) {
-				nextPlayer := togglePlayer(currentPlayer)
+				fmt.Println("is over")
+				nextPlayer := ToggleRandomPlayer(2)
 				SendUpdate(lobby, board, countOthelloWinner(board), nextPlayer, true, true)
 				currentPlayer = nextPlayer
 				continue
 			}
 
+			fmt.Println("playing")
 			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
 			currentPlayer = togglePlayer(currentPlayer)
 		} else {
@@ -90,10 +94,9 @@ func isOthelloOver(board types.Board) bool {
 	for i := 0; i <= 7; i++ {
 		for j := 0; j <= 7; j++ {
 			if piece, _ := board.Get(i, j); piece == 0 {
-				if !isOthelloMoveValid(board, i, j, 1, 1) || !isOthelloMoveValid(board, i, j, 2, 2) {
-					return true
+				if isOthelloMoveValid(board, i, j, 1, 1) || isOthelloMoveValid(board, i, j, 2, 2) {
+					return false
 				} 
-				return false
 			}
 		}
 	}
