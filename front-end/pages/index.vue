@@ -32,16 +32,13 @@ export default {
             await fetch(`https://${this.api}/lobby?lobbyId=${this.lobbyId}`)
                 .then(response => response.text())
                 .then(response => {
-                    console.log(response)
-                    if (response === 'tictactoe') {
-                        console.log('push to tictactoe')
-                        navigateTo({
-                            path: '/tictactoe',
-                            query: {
-                                lobbyId: this.lobbyId
-                            }
-                        })
-                    }
+                    //console.log(response)
+                    navigateTo({
+                        path: '/' + response,
+                        query: {
+                            lobbyId: this.lobbyId
+                        }
+                    })
                 })
         }
     }
