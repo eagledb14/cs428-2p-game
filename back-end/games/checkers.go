@@ -49,6 +49,7 @@ func Checkers(lobby *types.Lobby) {
 			board.Set(toCol, toRow, pieceValue)
 
 			if isCheckersGameOver(board) {
+				//set player to random
 				SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, true)
 				continue
 			}
@@ -77,6 +78,7 @@ func getPossibleMoves(board types.Board, currentCol, currentRow int) types.Board
 		if currentRow != 0 && forwardLeft == 0 {
 			possibleMovesBoard.Set(currentCol-1, currentRow-1, 5)
 		} else if forwardLeft == 2 && jumpLeft == 0 && currentCol > 1 && currentRow > 1 {
+			//check for king
 			//if it is occupied by an opponent piece and the space behind it is empty and in-bounds, it can be jumped
 			possibleMovesBoard.Set(currentCol-2, currentRow-2, 5)
 		}
@@ -116,6 +118,7 @@ func isCheckersMoveValid(board types.Board, fromCol, toCol, fromRow, toRow, curr
 	}
 
 	//each row and col parameter must be in-bounds
+	//use get errors for bound checking
 	if fromRow > 7 || fromRow < 0 || toRow > 7 || toRow < 0 || fromCol > 7 || fromCol < 0 || toCol > 7 || toCol < 0 {
 		return false
 	}
@@ -169,6 +172,7 @@ func isCheckersGameOver(board types.Board) bool {
 	noBlackPiecesLeft := true
 
 	//look in each space for a piece
+checkBoard:
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			pieceValue, _ := board.Get(i, j)
@@ -180,11 +184,8 @@ func isCheckersGameOver(board types.Board) bool {
 
 			//no need to keep searching if a piece from each team has been found
 			if !noRedPiecesLeft && !noBlackPiecesLeft {
-				break
+				break checkBoard
 			}
-		}
-		if !noRedPiecesLeft && !noBlackPiecesLeft {
-			break
 		}
 	}
 
