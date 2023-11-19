@@ -13,7 +13,7 @@
     height: 100%;
     /* background-color: #0cc5f7; */
 }
-h1 {
+body {
     font-family: arial;
 }
 </style>

@@ -27,12 +27,16 @@ func Tictactoe(lobby *types.Lobby) {
 			board.Set(row, col, currentPlayer)
 
 			if isGameOver(board, row, col, currentPlayer) {
-				SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, true)
+				nextPlayer := ToggleRandomPlayer(2)
+				SendUpdate(lobby, board, currentPlayer, nextPlayer, true, true)
+				currentPlayer = nextPlayer
 				continue
 			}
 
 			if isBoardFull(board) {
-				SendUpdate(lobby, board, -1, togglePlayer(currentPlayer), true, true)
+				nextPlayer := ToggleRandomPlayer(2)
+				SendUpdate(lobby, board, -1, nextPlayer, true, true)
+				currentPlayer = nextPlayer
 				continue
 			}
 
@@ -123,3 +127,5 @@ func togglePlayer(currentPlayer int) int {
 	}
 	return 1
 }
+
+
