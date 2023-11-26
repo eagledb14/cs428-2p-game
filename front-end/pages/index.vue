@@ -6,7 +6,7 @@
         <div class="game-options">
             <NuxtLink to="/checkers" class="game-icon"><img src="/checkers.jpg"></NuxtLink>
             <NuxtLink to="/tictactoe" class="game-icon"><img src="/tictactoe.jpg"></NuxtLink>
-          <NuxtLink to="/connectFour" class="game-icon"><img src="/Connect_Four_icon_and_logo.png"></NuxtLink>
+          <NuxtLink to="/fourinarow" class="game-icon"><img src="/Connect_Four_icon_and_logo.png"></NuxtLink>
           <NuxtLink to="/othello" class="game-icon"><img src="/othello_icon.png"></NuxtLink>
 
         </div>
@@ -32,7 +32,7 @@ export default {
             await fetch(`https://${this.api}/lobby?lobbyId=${this.lobbyId}`)
                 .then(response => response.text())
                 .then(response => {
-                    //console.log(response)
+                    console.log(response)
                     navigateTo({
                         path: '/' + response,
                         query: {

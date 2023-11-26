@@ -29,9 +29,10 @@ func Fourinarow(lobby *types.Lobby) {
 			continue
 		}
 
-		var col int = move.To.X
+		col := move.To.X
 
-		if col < 0 || col >= cols {
+		if col < 0 || col >= cols - 1 {
+			SendError(lobby, board, move, currentPlayer)
 			continue
 		}
 
@@ -65,19 +66,13 @@ func Fourinarow(lobby *types.Lobby) {
 // PlacePiece places a piece on the board at the specified column for the given player.
 // It returns the updated board and a boolean indicating whether the placement was successful.
 func PlacePiece(board types.Board, column, player int) (types.Board, bool) {
-	// Get the number of rows on the board
-	numRows, err := board.Get(0, 0)
-	if err != nil {
-		return board, false
-	}
-
 	// Check if the column index is out of bounds
-	if column < 0 || column >= cols {
+	if column < 0 || column >= cols - 1 {
 		return board, false
 	}
 
 	// Iterate over rows to find the first empty cell in the specified column
-	for row := numRows - 1; row >= 0; row-- {
+	for row := rows - 1; row >= 0; row-- {
 		cellValue, err := board.Get(row, column)
 		if err != nil {
 			return board, false
