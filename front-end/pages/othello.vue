@@ -8,7 +8,7 @@
             <table>
                 <tbody>
                     <tr v-for="(row, rowIndex) in table">
-                        <td class="cell" v-for="(item, index) in row" @click="selectedItem(rowIndex, index)">
+                        <td v-for="(item, index) in row" @click="selectedItem(rowIndex, index)">
                             <svg-icon v-if="item === 1" type="mdi" :path="xIcon"></svg-icon>
                             <svg-icon v-if="item === 2" type="mdi" :path="oIcon"></svg-icon>
                         </td>
@@ -175,6 +175,7 @@ export default {
             this.socket.send(JSON.stringify({ Player: this.player, Reset: true, To: { X: 0, Y: 0 }, From: { X: 0, Y: 0 }}))    
         },
         convertBoard(board) {
+            console.log("board")
             const table = [];
             for (let i = 0; i < board.length; i += 8) {
                 table.push(board.slice(i, i + 8));
@@ -190,8 +191,8 @@ export default {
 </script>
 <style scoped="true">
 td {
-    height: 55px;
-    width: 55px;
+    height: 4vh;
+    width: 4vh;
     padding: 8px;
     position: relative;
     vertical-align: top;
@@ -239,20 +240,5 @@ button {
 }
 .buttons button {
     margin: 10px;
-}
-/* Styles for screens wider than 600px */
-@media (min-width: 600px) {
-    .cell {
-        height: 5vh; /* Height relative to 10% of the viewport height */
-        width: 3.4vw;
-    }
-}
-
-/* Styles for screens narrower than 600px */
-@media (max-width: 599px) {
-    .cell {
-        height: 5vh; /* Height relative to 10% of the viewport height */
-        width: 5vw;
-    }
 }
 </style>
