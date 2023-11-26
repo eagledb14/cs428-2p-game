@@ -97,11 +97,15 @@ export default {
     },
     convertBoard(board) {
       console.log(board)
-      const table = [];
+      let table = []
       for (let i = 0; i < board.length; i += 7) {
         table.push(board.slice(i, i + 7))
-      };
-      return table[0].map((_, colIndex) => table.map(row => row[colIndex]));
+      }
+      table = table[0].map((_, colIndex) => table.map(row => row[colIndex]));
+      for (let row of table) {
+        row.reverse();
+      }
+      return table;
     },
     dropDisk(colIndex) {
       console.log(colIndex)

@@ -30,11 +30,6 @@ func Fourinarow(lobby *types.Lobby) {
 
 		col := move.To.X
 
-		if col < 0 || col >= cols - 1 {
-			SendError(lobby, board, move, currentPlayer)
-			continue
-		}
-
 		board, piecePlaced := PlacePiece(board, col, move.Player, currentPlayer)
 
 		if piecePlaced {
@@ -66,21 +61,18 @@ func PlacePiece(board types.Board, column, player int, currentPlayer int) (types
 		return board, false
 	}
 
-	// Check if the column index is out of bounds
-	if column < 0 || column > cols - 1 {
-		return board, false
-	}
-
 	// Iterate over rows to find the first empty cell in the specified column
-	for row := rows - 1; row >= 0; row-- {
-		cellValue, err := board.Get(row, column)
-		if err != nil {
+	for row := 0; row < rows; row++ {
+		index := row * 7 + column
+		if index >= 42 || row >= 6 || column >= 7 || row < 0 || column < 0 {
 			return board, false
 		}
+		cellValue := board.Board[index]
 
 		// If the cell is empty, place the piece and return the updated board
 		if cellValue == emptyCell {
-			board.Set(row, column, player)
+			// board.Set(row, column, player)
+			board.Board[row * 7 + column] = player
 			return board, true
 		}
 	}

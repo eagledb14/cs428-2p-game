@@ -95,7 +95,7 @@ func NewTicTacToeBoard() Board {
 }
 
 func NewFourInARowBoard() Board {
-	return NewBoard(6, 7)
+	return NewBoard(7, 6)
 }
 
 func NewOthelloBoard() Board {
