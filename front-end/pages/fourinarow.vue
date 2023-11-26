@@ -102,9 +102,6 @@ export default {
         table.push(board.slice(i, i + 7))
       }
       table = table[0].map((_, colIndex) => table.map(row => row[colIndex]));
-      for (let row of table) {
-        row.reverse();
-      }
       return table;
     },
     dropDisk(colIndex) {

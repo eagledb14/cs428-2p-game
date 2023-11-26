@@ -114,7 +114,7 @@ func NewOthelloBoard() Board {
 
 
 func (b *Board) Set(x int, y int, value int) error {
-	index := x*b.column + y
+	index := x*b.row + y
 	if index >= len(b.Board) || y >= b.row || x >= b.column || x < 0 || y < 0 {
 		return errors.New("Out of bounds Index")
 	}
@@ -124,7 +124,7 @@ func (b *Board) Set(x int, y int, value int) error {
 }
 
 func (b *Board) Get(x int, y int) (int, error) {
-	index := x*b.column + y
+	index := x*b.row + y
 	if index >= len(b.Board) || y >= b.row || x >= b.column || x < 0 || y < 0 {
 		return 0, errors.New("Out of bounds Index")
 	}

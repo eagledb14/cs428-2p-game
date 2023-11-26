@@ -62,17 +62,15 @@ func PlacePiece(board types.Board, column, player int, currentPlayer int) (types
 	}
 
 	// Iterate over rows to find the first empty cell in the specified column
-	for row := 0; row < rows; row++ {
-		index := row * 7 + column
-		if index >= 42 || row >= 6 || column >= 7 || row < 0 || column < 0 {
+	for row := rows - 1; row >= 0; row-- {
+		cellValue, err := board.Get(row, column)
+		if err != nil {
 			return board, false
 		}
-		cellValue := board.Board[index]
 
 		// If the cell is empty, place the piece and return the updated board
 		if cellValue == emptyCell {
-			// board.Set(row, column, player)
-			board.Board[row * 7 + column] = player
+			board.Set(row, column, player)
 			return board, true
 		}
 	}
