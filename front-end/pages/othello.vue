@@ -3,11 +3,12 @@
         <h1 v-if="!player || !connected">Share Game to Play</h1>
         <h1 v-else-if="player === turn">Your turn</h1>
         <h1 v-else-if="player && player !== turn">Waiting for opponent</h1>
+        <h1>Lobby ID: {{ this.lobbyId }}</h1>
         <div class="tic-tac-toe-board">
             <table>
                 <tbody>
                     <tr v-for="(row, rowIndex) in table">
-                        <td v-for="(item, index) in row" @click="selectedItem(rowIndex, index)">
+                        <td class="cell" v-for="(item, index) in row" @click="selectedItem(rowIndex, index)">
                             <svg-icon v-if="item === 1" type="mdi" :path="xIcon"></svg-icon>
                             <svg-icon v-if="item === 2" type="mdi" :path="oIcon"></svg-icon>
                         </td>
@@ -39,7 +40,6 @@
                 <span>: {{ this.score2 }}</span>
             </div>
         </div>
-        <h1>Lobby ID: {{ this.lobbyId }}</h1>
     </div>
 </template>
 <script>
@@ -221,7 +221,7 @@ button {
     min-height: 48px;
 }
 .tic-tac-toe-board {
-    padding: 48px 0;
+    padding: 24px 0;
 }
 .score {
     display: flex;
@@ -239,5 +239,20 @@ button {
 }
 .buttons button {
     margin: 10px;
+}
+/* Styles for screens wider than 600px */
+@media (min-width: 600px) {
+    .cell {
+        height: 5vh; /* Height relative to 10% of the viewport height */
+        width: 3.4vw;
+    }
+}
+
+/* Styles for screens narrower than 600px */
+@media (max-width: 599px) {
+    .cell {
+        height: 5vh; /* Height relative to 10% of the viewport height */
+        width: 5vw;
+    }
 }
 </style>
