@@ -98,7 +98,7 @@ export default {
     convertBoard(board) {
       console.log(board)
       const table = [];
-      for (let i = 0; i < board.length; i += 7) {
+      for (let i = 0; i < board.length; i += 6) {
         table.push(board.slice(i, i + 6))
       };
       return table
@@ -152,8 +152,8 @@ export default {
   grid-gap: 5px;
 }
 .cell {
-  width: 50px;
-  height: 50px;
+  width: 5.5vh;
+  height: 5.5vh;
   border-radius: 50%;
   background-color: lightgray;
   display: flex;
