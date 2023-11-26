@@ -195,7 +195,7 @@ button {
     font-size: 0.875rem;
     font-weight: bold;
     min-height: 48px;
-}http://localhost:3000/fourinarow?lobbyId=247099
+}
 .score {
     display: flex;
     justify-content: center;
