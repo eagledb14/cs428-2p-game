@@ -98,11 +98,10 @@ export default {
     convertBoard(board) {
       console.log(board)
       const table = [];
-      for (let i = 0; i < board.length; i += 6) {
-        table.push(board.slice(i, i + 6))
+      for (let i = 0; i < board.length; i += 7) {
+        table.push(board.slice(i, i + 7))
       };
-      return table
-
+      return table[0].map((_, colIndex) => table.map(row => row[colIndex]));
     },
     dropDisk(colIndex) {
       console.log(colIndex)
@@ -196,7 +195,7 @@ button {
     font-size: 0.875rem;
     font-weight: bold;
     min-height: 48px;
-}
+}http://localhost:3000/fourinarow?lobbyId=247099
 .score {
     display: flex;
     justify-content: center;

@@ -15,7 +15,6 @@ const (
 func Fourinarow(lobby *types.Lobby) {
 	board := types.NewFourInARowBoard()
 	currentPlayer := player1
-	winner := 0
 
 	for {
 		move, quit := validateMsg(lobby)
@@ -36,38 +35,39 @@ func Fourinarow(lobby *types.Lobby) {
 			continue
 		}
 
-		board, piecePlaced := PlacePiece(board, col, currentPlayer)
+		board, piecePlaced := PlacePiece(board, col, move.Player, currentPlayer)
 
 		if piecePlaced {
 			if CheckWin(&board, currentPlayer) {
-				winner = currentPlayer
-			} else if currentPlayer == player1 {
-				currentPlayer = player2
-			} else {
-				currentPlayer = player1
+				nextPlayer := ToggleRandomPlayer(2)
+				SendUpdate(lobby, board, currentPlayer, nextPlayer, true, true)
+				currentPlayer = nextPlayer
+				continue
 			}
+			if checkFull(board) {
+				nextPlayer := ToggleRandomPlayer(2)
+				SendUpdate(lobby, board, -1, nextPlayer, true, true)
+				currentPlayer = nextPlayer
+				continue
+			}
+			
+			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
+			currentPlayer = togglePlayer(currentPlayer)
 		} else {
 			SendError(lobby, board, move, currentPlayer)
-		}
-		if winner != 0 {
-			var nextPlayer int
-
-			if winner > 0 { // Game won
-				nextPlayer = ToggleRandomPlayer(2)
-				SendUpdate(lobby, board, currentPlayer, nextPlayer, true, true)
-			} else { // Draw game
-				nextPlayer = ToggleRandomPlayer(2)
-				SendUpdate(lobby, board, -1, nextPlayer, true, true)
-			}
 		}
 	}
 }
 
 // PlacePiece places a piece on the board at the specified column for the given player.
 // It returns the updated board and a boolean indicating whether the placement was successful.
-func PlacePiece(board types.Board, column, player int) (types.Board, bool) {
+func PlacePiece(board types.Board, column, player int, currentPlayer int) (types.Board, bool) {
+	if player != currentPlayer {
+		return board, false
+	}
+
 	// Check if the column index is out of bounds
-	if column < 0 || column >= cols - 1 {
+	if column < 0 || column > cols - 1 {
 		return board, false
 	}
 
@@ -146,4 +146,16 @@ func CheckWin(b *types.Board, player int) bool {
 		}
 	}
 	return false
+}
+
+func checkFull(board types.Board) bool {
+  for i := 0; i < cols - 1; i++ {
+    for j := 0; j < rows - 1; j++ {
+      if piece, _ := board.Get(i, j); piece == emptyCell {
+	return false
+      }
+    }
+  }
+
+  return true
 }
