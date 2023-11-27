@@ -139,9 +139,9 @@ func CheckWin(b *types.Board, player int) bool {
 }
 
 func checkFull(board types.Board) bool {
-  for i := 0; i < cols - 1; i++ {
-    for j := 0; j < rows - 1; j++ {
-      if piece, _ := board.Get(i, j); piece == emptyCell {
+  for i := 0; i < cols; i++ {
+    for j := 0; j < rows; j++ {
+      if piece, _ := board.Get(j, i); piece == emptyCell {
 	return false
       }
     }
