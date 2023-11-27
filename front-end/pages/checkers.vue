@@ -5,9 +5,16 @@
         <h1 v-else-if="player && player !== turn">Waiting for opponent</h1>
         <div ref="board" class="checker-board" draggable="false">
             <div v-for="(row, rowIndex) in table" class="board-row">
-                <div :ref="`${rowIndex},${colIndex}`" v-for="(item, colIndex) in row" @click="selectItem(rowIndex, colIndex)" :class="item === -1 ? 'red-square' : 'black-square'" class="square" draggable="false" :rowIndex="rowIndex" :colIndex="colIndex" >
-                    <img v-if="item === 1" src="/Red Checker.svg" class="checker" draggable="false"/>
-                    <img v-if="item === 2" src="/Black Checker.svg" class="checker" draggable="false"/>
+                <div :ref="`${rowIndex},${colIndex}`" v-for="(item, colIndex) in row" 
+                class="square" draggable="false" 
+                :class="{ 
+                    'red-square' : item === -1, 
+                    'black-square': item !== -1, 
+                    'valid-move': currentValidMoves[rowIndex][colIndex] === 5 || currentValidMoves[rowIndex][colIndex] === 6}" 
+                :rowIndex="rowIndex" 
+                :colIndex="colIndex" >
+                    <img v-if="item === 2" :src="redPiece" class="checker" draggable="false"/>
+                    <img v-if="item === 1" :src="blackPiece" class="checker" draggable="false"/>
                 </div>
             </div>
         </div>
@@ -24,15 +31,15 @@
 
         <div class="scores">
             <div class="score">
-                <svg-icon type="mdi" :path="xIcon"></svg-icon>
-                <span>: {{ this.score1 }}</span>
+                <img :src="redPiece" class="player-icon"/>
+                <span>: {{ this.score2 }}</span>
             </div>
             <div class="score">
                 <span>Ties: {{ this.ties }}</span>
             </div>
             <div class="score">
-                <svg-icon type="mdi" :path="oIcon"></svg-icon>
-                <span>: {{ this.score2 }}</span>
+                <img :src="blackPiece" class="player-icon"/>
+                <span>: {{ this.score1 }}</span>
             </div>
         </div>
         <h1>Lobby ID: {{ this.lobbyId }}</h1>
@@ -40,25 +47,27 @@
 </template>
 <script>
 import SvgIcon from '@jamescoyle/vue-icon';
-import { mdiCircleOutline, mdiWindowClose } from '@mdi/js';
-import Websocket from 'ws';
 export default {
     components: {SvgIcon},
     data() {
         return {
-            table: [[-1, 1, -1, 1, -1, 1, -1, 1],
-                    [1, -1, 1, -1, 1, -1, 1, -1],
-                    [-1, 1, -1, 1, -1, 1, -1, 1],
-                    [0, -1, 0, -1, 0, -1, 0, -1],
-                    [-1, 0, -1, 0, -1, 0, -1, 0],
-                    [2, -1, 2, -1, 2, -1, 2, -1],
-                    [-1, 2, -1, 2, -1, 2, -1, 2],
-                    [2, -1, 2, -1, 2, -1, 2, -1]],
-            xIcon: mdiWindowClose,
-            oIcon: mdiCircleOutline,
-            prevTable: [[0, 0, 0],
-                        [0, 0, 0],
-                        [0, 0, 0]],
+            table: [[-1, 2, -1, 0, -1, 1, -1, 1],
+                    [2, -1, 2, -1, 0, -1, 1, -1],
+                    [-1, 2, -1, 0, -1, 1, -1, 1],
+                    [2, -1, 2, -1, 0, -1, 1, -1],
+                    [-1, 2, -1, 0, -1, 1, -1, 1],
+                    [2, -1, 2, -1, 0, -1, 1, -1],
+                    [-1, 2, -1, 0, -1, 1, -1, 1],
+                    [2, -1, 2, -1, 0, -1, 1, -1]],
+            defaultMoves: [[0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0]],
+            validMoves: undefined,
             turn: 1,
             socket: undefined,
             connected: false,
@@ -71,6 +80,8 @@ export default {
             ties: 0,
             api: 'game.blackman.zip/api',
             game: 'checkers',
+            blackPiece: '/Black Checker.svg',
+            redPiece: '/Red Checker.svg',
             selectedItem: undefined // { row: 0, column: 0 }
         }
     },
@@ -78,25 +89,25 @@ export default {
         // check for query parameter to join websocket
         // create lobby otherwise, show share link/popup info
         // We'll need to call something here to get the board/lobby once that is set up
-        // if (this.$route.query.lobbyId) {
-        //     await fetch(`https://${this.api}/${this.game}?lobbyId=${this.$route.query.lobbyId}`)
-        //         .then(response => response.json())
-        //         .then(data => {
-        //             console.log(data)
-        //             this.lobbyId = this.$route.query.lobbyId
-        //             this.table = this.convertBoard(data.board)
-        //         });
-        // } else {
-        //     await fetch(`https://${this.api}/${this.game}`)
-        //         .then(response => response.json())
-        //         .then(data => {
-        //             console.log(data)
-        //             this.lobbyId = data
-        //             // this.$router.replace({ query: { lobbyId: this.lobbyId} })
-        //         });
-        // }
+        if (this.$route.query.lobbyId) {
+            await fetch(`https://${this.api}/${this.game}?lobbyId=${this.$route.query.lobbyId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    this.lobbyId = this.$route.query.lobbyId
+                    this.table = this.convertBoard(data.board)
+                });
+        } else {
+            await fetch(`https://${this.api}/${this.game}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    this.lobbyId = data
+                    // this.$router.replace({ query: { lobbyId: this.lobbyId} })
+                });
+        }
 
-        // this.setupSocket()
+        this.setupSocket()
         this.setupEventListeners()
     },
     watch: {
@@ -110,6 +121,20 @@ export default {
                     this.ties++
                 }
             }
+        },
+        selectedItem() {
+            if (this.selectedItem) {
+                // - GetMoves: bool
+                const row = this.selectedItem.row
+                const column = this.selectedItem.col
+                console.log('selectedItem', this.selectedItem)
+                this.socket.send(JSON.stringify({ Player: this.player, Reset: false, To: { X: row, Y: column }, From: { X: row, Y: column }, GetMoves: true}))
+            }
+        }
+    },
+    computed: {
+        currentValidMoves() {
+            return this.validMoves || this.defaultMoves
         }
     },
     methods: {
@@ -119,6 +144,8 @@ export default {
                 const message = JSON.parse(event.data);
                 if (!this.player) {
                     this.player = message
+                } else if (message?.board && this.selectedItem) {
+                    this.validMoves = this.convertBoard(message.board)                    
                 } else if (message?.board && message?.validMove) {
                     // handle move event
                     // ## BoardUpdate
@@ -167,8 +194,7 @@ export default {
             for (let row = 0; row < this.table.length; row++) {
                 for (let col = 0; col < this.table[row].length; col++) {
                     const pointerDown = () => {
-                        // if (this.table[row][col] === this.player && this.turn === this.player) {
-                        if (this.table[row][col] > 0 && !this.selectedItem) {
+                        if (this.table[row][col] === this.player && !this.selectedItem) {
                             this.selectedItem = { row, col, piece: this.table[row][col] }
                             // request valid moves
                             this.$refs['board'].addEventListener('pointermove', pointerMove)
@@ -176,20 +202,19 @@ export default {
                     }
                     this.$refs[`${row},${col}`][0].addEventListener('pointerup', (event) => {
                         this.$refs['board'].removeEventListener('pointermove', pointerMove)
-                        // if (this.table[row][col] === this.player && this.turn === this.player) {
                         if (this.selectedItem) {
                             this.$refs[`${this.selectedItem.row},${this.selectedItem.col}`][0].children[0].style = ''
                             const selectedEl = document.elementFromPoint(event.clientX, event.clientY)
-                            const selectedRow = selectedEl.getAttribute("rowindex")
-                            const selectedCol = selectedEl.getAttribute("colindex")
+                            const selectedRow = parseInt(selectedEl.getAttribute("rowindex"))
+                            const selectedCol = parseInt(selectedEl.getAttribute("colindex"))
                             // check if valid move
                             this.$nextTick(() => {
                                 if (this.table[selectedRow][selectedCol] === 0) {
                                     // Send move to server
-                                    this.table[this.selectedItem.row][this.selectedItem.col] = 0
-                                    this.table[selectedRow][selectedCol] = this.selectedItem.piece
+                                    this.selectItem({ row: this.selectedItem.row, column: this.selectedItem.col }, { row: selectedRow, column: selectedCol })
                                 }
                                 this.selectedItem = undefined
+                                this.validMoves = undefined
                             })
                         }
                     })
@@ -197,29 +222,32 @@ export default {
                 }
             }
         },
-        selectItem(row, column) {
-            if (this.table[row][column] === 0 && this.turn === this.player) {
+        selectItem(from, to) {
+            if (this.table[to.row][to.column] === 0 && this.turn === this.player) {
                 // ## Move
                 // - params
                 // - Player: int
                 // - Reset: bool
                 // - To: Point
                 // - From: Point
-                this.socket.send(JSON.stringify({ Player: this.player, Reset: false, To: { X: row, Y: column }, From: { X: row, Y: column }}))
+                console.log('selectItem', from, to)
+                const move = { Player: this.player, Reset: false, To: { X: to.row, Y: to.column }, From: { X: from.row, Y: from.column }, GetMoves: false}
+                console.log(move)
+                this.socket.send(JSON.stringify(move))
             }
         },
         restart() {  
             this.socket.send(JSON.stringify({ Player: this.player, Reset: true, To: { X: 0, Y: 0 }, From: { X: 0, Y: 0 }}))    
         },
         convertBoard(board) {
-            const table = []
-            table.push(board.slice(0, 3))
-            table.push(board.slice(3, 6))
-            table.push(board.slice(6, 9))
+            let table = []
+            for (let i = 0; i < board.length; i += 8) {
+                table.push(board.slice(i, i + 8))
+            }
+            table = table[0].map((_, colIndex) => table.map(row => row[colIndex]));
             return table
         },
         copyGameLink() {
-            // navigator.clipboard.writeText(window.location.href);
             navigator.clipboard.writeText(`${window.location.href}?lobbyId=${this.lobbyId}`);
         }
     }
@@ -227,11 +255,11 @@ export default {
 </script>
 <style>
 .square {
-    height: 10vmin;
-    width: 10vmin;
+    height: 11vmin;
+    width: 11vmin;
     max-width: 60px;
     max-height: 60px;
-    padding: 1vmin;
+    padding: 0.5vmin;
     position: relative;
     vertical-align: top;
     cursor: pointer;
@@ -242,7 +270,6 @@ export default {
 }
 .board-row {
     display: flex;
-
 }
 button {
     width: 100px;
@@ -264,6 +291,10 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+.player-icon {
+    width: 25px;
+    height: 25px;
 }
 .scores {
     justify-content: space-between;
@@ -291,5 +322,8 @@ button {
 }
 .black-square {
     background-color: black;
+}
+.valid-move {
+    box-shadow: inset 0px 0 0px 0.5vmin yellow;
 }
 </style>

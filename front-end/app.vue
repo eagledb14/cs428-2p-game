@@ -11,9 +11,11 @@
     position: fixed;
     width: 100%;
     height: 100%;
+    overflow: scroll;
     /* background-color: #0cc5f7; */
 }
 body {
     font-family: arial;
+    margin: 0;
 }
 </style>

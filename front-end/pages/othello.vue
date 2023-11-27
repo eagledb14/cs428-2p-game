@@ -4,17 +4,14 @@
         <h1 v-else-if="player === turn">Your turn</h1>
         <h1 v-else-if="player && player !== turn">Waiting for opponent</h1>
         <h1>Lobby ID: {{ this.lobbyId }}</h1>
-        <div class="tic-tac-toe-board">
-            <table>
-                <tbody>
-                    <tr v-for="(row, rowIndex) in table">
-                        <td v-for="(item, index) in row" @click="selectedItem(rowIndex, index)">
-                            <svg-icon v-if="item === 1" type="mdi" :path="xIcon"></svg-icon>
-                            <svg-icon v-if="item === 2" type="mdi" :path="oIcon"></svg-icon>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="othello-board">
+            <div v-for="(row, rowIndex) in table" class="board-row">
+                <div v-for="(item, colIndex) in row" 
+                class="square" @click="selectedItem(rowIndex, colIndex)">
+                    <img v-if="item === 1" :src="blackPiece" class="checker"/>
+                    <img v-if="item === 2" :src="whitePiece" class="checker"/>
+                </div>
+            </div>
         </div>
         <div v-if="isOver" class="game-over">
             <h1 v-if="player === winner">You win!</h1>
@@ -29,14 +26,14 @@
 
         <div class="scores">
             <div class="score">
-                <svg-icon type="mdi" :path="xIcon"></svg-icon>
+                <img :src="blackPiece" class="player-icon"/>
                 <span>: {{ this.score1 }}</span>
             </div>
             <div class="score">
                 <span>Ties: {{ this.ties }}</span>
             </div>
             <div class="score">
-                <svg-icon type="mdi" :path="oIcon"></svg-icon>
+                <img :src="whitePiece" class="player-icon"/>
                 <span>: {{ this.score2 }}</span>
             </div>
         </div>
@@ -79,7 +76,9 @@ export default {
             score2: 0,
             ties: 0,
             api: 'game.blackman.zip/api',
-            game: 'othello'
+            game: 'othello',
+            whitePiece: '/White Checker.svg',
+            blackPiece: '/Black Checker.svg'
         }
     },
     async mounted() {
@@ -190,25 +189,45 @@ export default {
 }
 </script>
 <style scoped="true">
-td {
-    height: 4vh;
-    width: 4vh;
-    padding: 8px;
+.square {
+    height: 10.5vmin;
+    width: 10.5vmin;
+    max-width: 60px;
+    max-height: 60px;
+    padding: 0.5vmin;
     position: relative;
     vertical-align: top;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(19, 84, 32);
+    border: 0.25vmin solid rgb(13, 58, 22);
 }
-td svg {
-    height: 92%;
-    width: 100%;
+.board-row {
+    display: flex;
+}
+.othello-board {
+    margin: 0;
+    border: 5px solid black;
 }
 table {
-  border-collapse: collapse;
-  border-style: hidden;
+    border-collapse: collapse;
+    border-style: hidden;
+}
+.checker {
+    width: 100%;
+    height: 100%;
+    justify-self: center;
+    align-self: center;
+}
+
+tr {
+    display: flex;
 }
 table td {
-  border: 5px solid black;
+  border: 5px solid rgb(13, 58, 22);
 }
 
 button {
@@ -228,6 +247,10 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+.player-icon {
+    width: 25px;
+    height: 25px;
 }
 .scores {
     justify-content: space-between;
