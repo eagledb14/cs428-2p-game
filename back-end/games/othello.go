@@ -31,8 +31,14 @@ func Othello(lobby *types.Lobby) {
 				continue
 			}
 
-			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
-			currentPlayer = togglePlayer(currentPlayer)
+			// checks if the next player can move, if they can't then skip their move
+			if canPlayerMove(board, togglePlayer(currentPlayer)) {
+				SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
+				currentPlayer = togglePlayer(currentPlayer)
+				continue
+			}
+
+			SendUpdate(lobby, board, currentPlayer, currentPlayer, true, false)
 		} else {
 			SendError(lobby, board, move, currentPlayer)
 		}
@@ -90,7 +96,7 @@ func isOthelloOver(board types.Board, currentPlayer int) bool {
 	for i := 0; i <= 7; i++ {
 		for j := 0; j <= 7; j++ {
 			if piece, _ := board.Get(i, j); piece == 0 {
-				if isOthelloMoveValid(board, i, j, currentPlayer, currentPlayer) {
+				if isOthelloMoveValid(board, i, j, 1, 1) && isOthelloMoveValid(board, i, j, 2, 2) {
 					return false
 				} 
 			}
@@ -98,6 +104,18 @@ func isOthelloOver(board types.Board, currentPlayer int) bool {
 	}
 
 	return true
+}
+
+func canPlayerMove(board types.Board, currentPlayer int) bool {
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if piece, _ := board.Get(i, j); piece == 0 && isOthelloMoveValid(board, i, j, currentPlayer, currentPlayer){
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func countOthelloWinner(board types.Board) int {
