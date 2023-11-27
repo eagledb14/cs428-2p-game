@@ -116,8 +116,11 @@ func countOthelloWinner(board types.Board) int {
 
 	if count1 > count2 {
 		return 1
-	} 
-	return 2
+	} else if count1 < count2 {
+		return 2
+	}
+
+	return -1
 }
 
 func updateOthelloBoard(board *types.Board, row int, col int, currentPlayer int) {
