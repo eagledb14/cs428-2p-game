@@ -24,14 +24,13 @@ func Othello(lobby *types.Lobby) {
 		if isOthelloMoveValid(board, row, col, currentPlayer, move.Player) {
 			updateOthelloBoard(&board, row, col, currentPlayer)
 
-			if isOthelloOver(board, currentPlayer) {
+			if isOthelloOver(board) {
 				nextPlayer := ToggleRandomPlayer(2)
 				SendUpdate(lobby, board, countOthelloWinner(board), nextPlayer, true, true)
 				currentPlayer = nextPlayer
 				continue
 			}
 
-			// checks if the next player can move, if they can't then skip their move
 			if canPlayerMove(board, togglePlayer(currentPlayer)) {
 				SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
 				currentPlayer = togglePlayer(currentPlayer)
@@ -90,20 +89,23 @@ func isOthelloMoveValid(board types.Board, row int, col int, currentPlayer int, 
 	return false
 }
 
-func isOthelloOver(board types.Board, currentPlayer int) bool {
+func isOthelloOver(board types.Board) bool {
+    // Check for each player
+    for _, player := range []int{1, 2} {
+        for i := 0; i <= 7; i++ {
+            for j := 0; j <= 7; j++ {
+                if piece, _ := board.Get(i, j); piece == 0 {
+                    if isOthelloMoveValid(board, i, j, player, player) {
+                        // If a valid move is found for either player, the game is not over
+                        return false
+                    }
+                }
+            }
+        }
+    }
 
-	//checks the whole board, if the place is empty, check if a move can be made, it not then return
-	for i := 0; i <= 7; i++ {
-		for j := 0; j <= 7; j++ {
-			if piece, _ := board.Get(i, j); piece == 0 {
-				if isOthelloMoveValid(board, i, j, 1, 1) && isOthelloMoveValid(board, i, j, 2, 2) {
-					return false
-				} 
-			}
-		}
-	}
-
-	return true
+    // If no valid moves for either player, the game is over
+    return true
 }
 
 func canPlayerMove(board types.Board, currentPlayer int) bool {
