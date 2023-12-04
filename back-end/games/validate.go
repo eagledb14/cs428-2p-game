@@ -2,6 +2,7 @@ package games
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 
 	"github.com/eagledb14/cs428-2p-game/types"
@@ -41,8 +42,11 @@ func SendUpdateSinglePlayer(lobby *types.Lobby, board types.Board, currentPlayer
 
 func SendError(lobby *types.Lobby, board types.Board, move types.Move, playerTurn int) {
 	update := types.NewBoardUpdate(false, move.Player, board, playerTurn)
-	json_update, _ := json.Marshal(update)
-	lobby.Players[move.Player-1].Write([]byte(json_update))
+	json_update, err := json.Marshal(update)
+	if err != nil {
+		fmt.Println(err, json_update, board)
+	}
+	lobby.Players[playerTurn - 1].Write([]byte(json_update))
 }
 
 func ToggleRandomPlayer(numPlayers int) int {
