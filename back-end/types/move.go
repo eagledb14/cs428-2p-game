@@ -6,6 +6,8 @@ type Move struct {
 	Player   int   `json:"player"`
 	Reset    bool  `json:"reset"`
 	GetMoves bool  `json:"getMoves"`
+	JumpOnly bool  `json:"jumpOnly"`
+	Pass     bool  `json:"pass"`
 	To       Point `json:"to"`
 	From     Point `json:"from"`
 }
@@ -23,6 +25,6 @@ func NewPoint(x int, y int) Point {
 }
 
 func (p *Point) AddPoint(point Point) {
-  p.X += point.X
-  p.Y += point.Y
+	p.X += point.X
+	p.Y += point.Y
 }

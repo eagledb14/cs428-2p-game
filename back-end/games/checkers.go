@@ -21,16 +21,23 @@ func Checkers(lobby *types.Lobby) {
 			continue
 		}
 
+		if move.Pass {
+			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
+			currentPlayer = togglePlayer(currentPlayer)
+			continue
+		}
+
 		fromRow, toRow, fromCol, toCol = move.From.X, move.To.X, move.From.Y, move.To.Y
 
 		//if move was a request for possible moves, send update with board showing possible moves
 		//without ending the player's turn
 		if move.GetMoves {
-			SendUpdate(lobby, getPossibleMoves(board, fromCol, fromRow), currentPlayer, currentPlayer, true, false)
+			_, moveBoard := getPossibleMoves(board, move.JumpOnly, fromCol, fromRow)
+			SendUpdateSinglePlayer(lobby, moveBoard, currentPlayer, currentPlayer, currentPlayer, true, false)
 			continue
 		}
 
-		if isCheckersMoveValid(board, fromCol, toCol, fromRow, toRow, currentPlayer, move.Player) {
+		if isCheckersMoveValid(board, move.JumpOnly, fromCol, toCol, fromRow, toRow, currentPlayer, move.Player) {
 			pieceValue, _ := board.Get(fromCol, fromRow)
 
 			//see if piece reached opposite end of board and should be promoted
@@ -38,19 +45,28 @@ func Checkers(lobby *types.Lobby) {
 				pieceValue += 2
 			}
 
-			//check if move was a jump move, set jumped space to empty if it was
-			jumpMove, jumpedCol, jumpedRow := getJumpedCoordinates(fromRow, toRow, fromCol, toCol)
-			if jumpMove {
-				board.Set(jumpedCol, jumpedRow, 0)
-			}
-
 			//set origin space to be empty, update desination to have piece that moved
 			board.Set(fromCol, fromRow, 0)
 			board.Set(toCol, toRow, pieceValue)
 
-			if isCheckersGameOver(board) {
-				SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, true)
-				continue
+			//check if move was a jump move
+			jumpMove, jumpedCol, jumpedRow := getJumpedCoordinates(fromRow, toRow, fromCol, toCol)
+			if jumpMove {
+				//overwrite jumped piece with empty space
+				board.Set(jumpedCol, jumpedRow, 0)
+
+				//game can only end if a piece was eliminated
+				if isCheckersGameOver(board) {
+					SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, true)
+					continue
+				}
+
+				//check if the piece can jump again, and notify player if so
+				canJumpAgain, _ := getPossibleMoves(board, true, toCol, toRow)
+				if canJumpAgain {
+					SendUpdateSinglePlayer(lobby, board, currentPlayer, currentPlayer, currentPlayer, true, false)
+					continue
+				}
 			}
 
 			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
@@ -62,78 +78,82 @@ func Checkers(lobby *types.Lobby) {
 
 }
 
-func getPossibleMoves(board types.Board, currentCol, currentRow int) types.Board {
+func getPossibleMoves(board types.Board, jumpOnly bool, currentCol, currentRow int) (bool, types.Board) {
 	possibleMovesBoard := types.NewCheckersBoard()
 	selectedPiece, _ := board.Get(currentCol, currentRow)
+	moveFound := false
 
 	//normal pieces will only use the first check (red) or the second (black), but king pieces will use both
-	if (selectedPiece == 1 || selectedPiece > 2) && currentCol != 0 {
-		forwardLeft, _ := board.Get(currentCol-1, currentRow-1)
-		forwardRight, _ := board.Get(currentCol-1, currentRow+1)
-		jumpLeft, _ := board.Get(currentCol-2, currentRow-2)
-		jumpRight, _ := board.Get(currentCol-2, currentRow+2)
+	if selectedPiece == 1 || selectedPiece > 2 {
+		//get errors to check for out-of-bounds spaces before making other checks
+		forwardLeft, forwardLeftError := board.Get(currentCol-1, currentRow-1)
+		forwardRight, forwardRightError := board.Get(currentCol-1, currentRow+1)
+		jumpLeft, jumpLeftError := board.Get(currentCol-2, currentRow-2)
+		jumpRight, jumpRightError := board.Get(currentCol-2, currentRow+2)
 
-		//if forward left is empty and in bounds, it can be moved to but not jumped
-		if currentRow != 0 && forwardLeft == 0 {
+		//if forward left is empty it can be moved to but not jumped
+		if forwardLeftError == nil && forwardLeft == 0 && !jumpOnly {
 			possibleMovesBoard.Set(currentCol-1, currentRow-1, 5)
-		} else if forwardLeft == 2 && jumpLeft == 0 && currentCol > 1 && currentRow > 1 {
-			//if it is occupied by an opponent piece and the space behind it is empty and in-bounds, it can be jumped
+			moveFound = true
+		} else if jumpLeftError == nil && forwardLeft%2 != selectedPiece%2 && jumpLeft == 0 {
+			//if it is occupied by an opponent piece and the space behind it is empty, it can be jumped
 			possibleMovesBoard.Set(currentCol-2, currentRow-2, 5)
+			moveFound = true
 		}
 
-		if currentRow != 7 && forwardRight == 0 {
+		if forwardRightError == nil && forwardRight == 0 && !jumpOnly {
 			possibleMovesBoard.Set(currentCol-1, currentRow+1, 5)
-		} else if forwardRight == 2 && jumpRight == 0 && currentCol > 1 && currentRow < 6 {
+			moveFound = true
+		} else if jumpRightError == nil && forwardRight%2 != selectedPiece%2 && jumpRight == 0 {
 			possibleMovesBoard.Set(currentCol-2, currentRow+2, 5)
+			moveFound = true
 		}
 	}
 
-	if selectedPiece >= 2 && currentCol != 7 {
-		forwardLeft, _ := board.Get(currentCol+1, currentRow-1)
-		forwardRight, _ := board.Get(currentCol+1, currentRow+1)
-		jumpLeft, _ := board.Get(currentCol+2, currentRow-2)
-		jumpRight, _ := board.Get(currentCol+2, currentRow+2)
+	if selectedPiece >= 2 {
+		forwardLeft, forwardLeftError := board.Get(currentCol+1, currentRow-1)
+		forwardRight, forwardRightError := board.Get(currentCol+1, currentRow+1)
+		jumpLeft, jumpLeftError := board.Get(currentCol+2, currentRow-2)
+		jumpRight, jumpRightError := board.Get(currentCol+2, currentRow+2)
 
-		if currentRow != 0 && forwardLeft == 0 {
+		if forwardLeftError == nil && forwardLeft == 0 && !jumpOnly {
 			possibleMovesBoard.Set(currentCol+1, currentRow-1, 5)
-		} else if forwardLeft == 2 && jumpLeft == 0 && currentCol < 6 && currentRow > 1 {
+			moveFound = true
+		} else if jumpLeftError == nil && forwardLeft%2 != selectedPiece%2 && jumpLeft == 0 {
 			possibleMovesBoard.Set(currentCol+2, currentRow-2, 5)
+			moveFound = true
 		}
 
-		if currentRow != 7 && forwardRight == 0 {
+		if forwardRightError == nil && forwardRight == 0 && !jumpOnly {
 			possibleMovesBoard.Set(currentCol+1, currentRow+1, 5)
-		} else if forwardRight == 2 && jumpRight == 0 && currentCol < 6 && currentRow < 6 {
+		} else if jumpRightError == nil && forwardRight%2 != selectedPiece%2 && jumpRight == 0 {
 			possibleMovesBoard.Set(currentCol+2, currentRow+2, 5)
+			moveFound = true
 		}
 	}
 
-	return possibleMovesBoard
+	return moveFound, possibleMovesBoard
 }
 
-func isCheckersMoveValid(board types.Board, fromCol, toCol, fromRow, toRow, currentPlayer, playerWhoMoved int) bool {
+func isCheckersMoveValid(board types.Board, jumpOnly bool, fromCol, toCol, fromRow, toRow, currentPlayer, playerWhoMoved int) bool {
 	if currentPlayer != playerWhoMoved {
 		return false
 	}
 
-	//each row and col parameter must be in-bounds
-	if fromRow > 7 || fromRow < 0 || toRow > 7 || toRow < 0 || fromCol > 7 || fromCol < 0 || toCol > 7 || toCol < 0 {
-		return false
-	}
+	selectedPiece, selectedPieceError := board.Get(fromCol, fromRow)
 
-	selectedPiece, _ := board.Get(fromCol, fromRow)
-
-	//piece should either have same value as player (normal piece) or two greater (king piece)
-	if selectedPiece != playerWhoMoved && selectedPiece != playerWhoMoved+2 {
+	//piece must be in-bounds and should either have same value as player (normal piece) or two greater (king piece)
+	if selectedPieceError != nil || (selectedPiece != playerWhoMoved && selectedPiece != playerWhoMoved+2) {
 		return false
 	}
 
 	//use the possible moves function to check if the attempted destination is valid
-	possibleMovesBoard := getPossibleMoves(board, fromCol, fromRow)
-	destination, _ := possibleMovesBoard.Get(toCol, toRow)
+	_, possibleMovesBoard := getPossibleMoves(board, jumpOnly, fromCol, fromRow)
+	destination, destinationError := possibleMovesBoard.Get(toCol, toRow)
 
 	//if destination is valid, it will be marked on the board as a possible move by the number 5
 	//if it is anything else, the move is invalid
-	return destination == 5
+	return destinationError == nil && destination == 5
 }
 
 func shouldPieceBePromoted(pieceValue, destCol int) bool {
@@ -169,6 +189,7 @@ func isCheckersGameOver(board types.Board) bool {
 	noBlackPiecesLeft := true
 
 	//look in each space for a piece
+boardCheck:
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			pieceValue, _ := board.Get(i, j)
@@ -180,11 +201,8 @@ func isCheckersGameOver(board types.Board) bool {
 
 			//no need to keep searching if a piece from each team has been found
 			if !noRedPiecesLeft && !noBlackPiecesLeft {
-				break
+				break boardCheck
 			}
-		}
-		if !noRedPiecesLeft && !noBlackPiecesLeft {
-			break
 		}
 	}
 

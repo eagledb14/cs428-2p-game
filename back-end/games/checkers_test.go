@@ -11,13 +11,52 @@ func TestCheckers(t *testing.T) {
 
 }
 
+func TestMeh(t *testing.T) {
+	board := types.NewCheckersBoard()
+	SendUpdateSinglePlayer(nil, board, 1, 1, 1, true, false)
+}
+
 func TestValidMove(t *testing.T) {
 	// Create a new checkers board
 	board := types.NewCheckersBoard()
 
 	//check that black piece is allowed to move forward
-	value := isCheckersMoveValid(board, 2, 3, 3, 2, 2, 2)
+	value := isCheckersMoveValid(board, false, 2, 3, 3, 2, 2, 2)
 	assert.True(t, value)
+}
+
+func TestGetPossibleMovesBlackPiece(t *testing.T) {
+	// Create a new checkers board
+	board := types.NewCheckersBoard()
+
+	//check that black king piece is allowed to move backward
+	_, moveBoard := getPossibleMoves(board, false, 2, 3)
+
+	leftMoveValue, _ := moveBoard.Get(3, 2)
+	rightMoveValue, _ := moveBoard.Get(3, 4)
+	wrongMoveValue, _ := moveBoard.Get(4, 1)
+
+	assert.True(t, leftMoveValue == 5)
+	assert.True(t, rightMoveValue == 5)
+	assert.True(t, wrongMoveValue == 0)
+}
+
+func TestGetPossibleMovesRedPiece(t *testing.T) {
+	// Create a new checkers board
+	board := types.NewCheckersBoard()
+
+	//check that black king piece is allowed to move backward
+	_, moveBoard := getPossibleMoves(board, false, 5, 2)
+
+	leftMoveValue, _ := moveBoard.Get(4, 1)
+	rightMoveValue, _ := moveBoard.Get(4, 3)
+	wrongMoveValue1, _ := moveBoard.Get(3, 4)
+	wrongMoveValue2, _ := moveBoard.Get(3, 6)
+
+	assert.True(t, leftMoveValue == 5)
+	assert.True(t, rightMoveValue == 5)
+	assert.True(t, wrongMoveValue1 == 0)
+	assert.True(t, wrongMoveValue2 == 0)
 }
 
 func TestValidKingMove(t *testing.T) {
@@ -29,7 +68,7 @@ func TestValidKingMove(t *testing.T) {
 	board.Set(2, 3, 4)
 
 	//check that black king piece is allowed to move backward
-	value := isCheckersMoveValid(board, 2, 1, 3, 2, 2, 2)
+	value := isCheckersMoveValid(board, false, 2, 1, 3, 2, 2, 2)
 	assert.True(t, value)
 }
 
@@ -41,7 +80,7 @@ func TestInvalidMove(t *testing.T) {
 	board.Set(1, 2, 0)
 
 	//check that black piece is not allowed to move backward
-	value := isCheckersMoveValid(board, 2, 1, 3, 2, 2, 2)
+	value := isCheckersMoveValid(board, false, 2, 1, 3, 2, 2, 2)
 	assert.False(t, value)
 }
 
@@ -58,8 +97,24 @@ func TestValidJump(t *testing.T) {
 	board.Set(4, 1, 1)
 
 	//check that red piece is allowed to jump black piece
-	value := isCheckersMoveValid(board, 4, 2, 1, 3, 1, 1)
+	value := isCheckersMoveValid(board, false, 4, 2, 1, 3, 1, 1)
 	assert.True(t, value)
+}
+
+func TestInvalidJump(t *testing.T) {
+	// Create a new checkers board
+	board := types.NewCheckersBoard()
+
+	//move red piece forward
+	board.Set(5, 0, 0)
+	board.Set(4, 1, 1)
+
+	//set up a red king piece where it could jump the red piece
+	board.Set(3, 2, 3)
+
+	//check that red king piece is not allowed to jump red piece
+	value := isCheckersMoveValid(board, false, 3, 5, 2, 0, 1, 1)
+	assert.False(t, value)
 }
 
 func TestGetJumpedPiece(t *testing.T) {
@@ -68,21 +123,21 @@ func TestGetJumpedPiece(t *testing.T) {
 
 	//move black piece forward
 	board.Set(2, 3, 0)
-	board.Set(3, 2, 2)
+	board.Set(3, 4, 2)
 
-	//move red piece forward, in postion to jump black piece
+	//move red piece forward, in postion to be jumped by black piece
 	board.Set(5, 2, 0)
-	board.Set(4, 1, 1)
+	board.Set(4, 3, 1)
 
 	//check that logic correctly identifies space to be jumped,
-	//and that the coordinates are that of the black piece being jumped
-	value, jumpedCol, jumpedRow := getJumpedCoordinates(4, 2, 1, 3)
+	//and that the coordinates are that of the red piece being jumped
+	value, jumpedCol, jumpedRow := getJumpedCoordinates(3, 5, 4, 2)
 	jumpedValue, _ := board.Get(jumpedCol, jumpedRow)
 
 	assert.True(t, value)
-	assert.True(t, jumpedCol == 3)
-	assert.True(t, jumpedRow == 2)
-	assert.True(t, jumpedValue == 2)
+	assert.True(t, jumpedCol == 4)
+	assert.True(t, jumpedRow == 3)
+	assert.True(t, jumpedValue == 1)
 }
 
 func TestPromotePieces(t *testing.T) {
