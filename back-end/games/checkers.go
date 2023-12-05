@@ -50,7 +50,7 @@ func Checkers(lobby *types.Lobby) {
 			board.Set(toCol, toRow, pieceValue)
 
 			//check if move was a jump move
-			jumpMove, jumpedCol, jumpedRow := getJumpedCoordinates(fromRow, toRow, fromCol, toCol)
+			jumpMove, jumpedCol, jumpedRow := getJumpedCoordinates(fromCol, toCol, fromRow, toRow)
 			if jumpMove {
 				//overwrite jumped piece with empty space
 				board.Set(jumpedCol, jumpedRow, 0)
