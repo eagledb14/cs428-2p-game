@@ -14,7 +14,9 @@
                 :rowIndex="rowIndex" 
                 :colIndex="colIndex" >
                     <img v-if="item === 2" :src="redPiece" class="checker" draggable="false"/>
+                    <img v-if="item === 4" :src="redQueen" class="checker" draggable="false"/>
                     <img v-if="item === 1" :src="blackPiece" class="checker" draggable="false"/>
+                    <img v-if="item === 3" :src="blackQueen" class="checker" draggable="false"/>
                 </div>
             </div>
         </div>
@@ -26,7 +28,8 @@
         <div class="buttons">
             <button v-if="isOver" @click="restart()">Play Again</button>
             <button v-else @click="restart()">Restart</button>
-            <button @click="copyGameLink()" >Share Game</button>
+            <button v-if="!connected" @click="copyGameLink()" >Share Game</button>
+            <button v-if="isJumpMove" @click="pass()">Pass</button>
         </div>
 
         <div class="scores">
@@ -68,6 +71,7 @@ export default {
                            [0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 0, 0, 0, 0, 0, 0, 0]],
             validMoves: undefined,
+            previousTurn: -1,
             turn: 1,
             socket: undefined,
             connected: false,
@@ -81,8 +85,11 @@ export default {
             api: 'game.blackman.zip/api',
             game: 'checkers',
             blackPiece: '/Black Checker.svg',
+            blackQueen: '/Black Checker Queen.svg',
             redPiece: '/Red Checker.svg',
-            selectedItem: undefined // { row: 0, column: 0 }
+            redQueen: '/Red Checker Queen.svg',
+            selectedItem: undefined, // { row: 0, column: 0 }
+            previousSelectedItem: undefined
         }
     },
     async mounted() {
@@ -91,7 +98,12 @@ export default {
         // We'll need to call something here to get the board/lobby once that is set up
         if (this.$route.query.lobbyId) {
             await fetch(`https://${this.api}/${this.game}?lobbyId=${this.$route.query.lobbyId}`)
-                .then(response => response.json())
+                .then(response => {
+                    return response.json()
+                }).catch(error => {
+                    console.error(error)
+                    this.$router.replace({ path: this.$route.path })
+                })
                 .then(data => {
                     console.log(data)
                     this.lobbyId = this.$route.query.lobbyId
@@ -128,13 +140,25 @@ export default {
                 const row = this.selectedItem.row
                 const column = this.selectedItem.col
                 console.log('selectedItem', this.selectedItem)
-                this.socket.send(JSON.stringify({ Player: this.player, Reset: false, To: { X: row, Y: column }, From: { X: row, Y: column }, GetMoves: true}))
+                const move = { Player: this.player, Reset: false, To: { X: row, Y: column }, From: { X: row, Y: column }, GetMoves: true}
+                if (this.isJumpMove) {
+                    if (this.previousSelectedItem.row === row && this.previousSelectedItem.column === column){
+                        move.JumpOnly = true
+                    } else {
+                        return
+                    }
+                }
+                console.log(move)
+                this.socket.send(JSON.stringify(move))
             }
         }
     },
     computed: {
         currentValidMoves() {
             return this.validMoves || this.defaultMoves
+        },
+        isJumpMove() {
+            return this.turn === this.previousTurn
         }
     },
     methods: {
@@ -144,6 +168,7 @@ export default {
                 const message = JSON.parse(event.data);
                 if (!this.player) {
                     this.player = message
+                    this.connected = true
                 } else if (message?.board && this.selectedItem) {
                     this.validMoves = this.convertBoard(message.board)                    
                 } else if (message?.board && message?.validMove) {
@@ -156,6 +181,7 @@ export default {
                     // - isOver: bool 
                     // - Board: []int
                     this.table = this.convertBoard(message.board)
+                    this.previousTurn = this.turn
                     this.turn = message.playerTurn
                     this.winner = message.playerMoveId
                     this.isOver = message.isOver
@@ -165,10 +191,11 @@ export default {
             }
             this.socket.onopen = (event) => {
                 console.log('opened', event)
-                this.connected = true
+                // this.connected = true
             }
             this.socket.onclose = async (event) => {
                 this.connected = false
+                this.$router.replace({ path: this.$route.path })
                 console.log('connection closed')
                 // await fetch(`https://${this.api}/tictactoe`)
                 // .then(response => response.json())
@@ -191,10 +218,10 @@ export default {
                     this.$refs['board'].removeEventListener('pointermove', pointerMove)
                 }
             }
-            for (let row = 0; row < this.table.length; row++) {
+                        for (let row = 0; row < this.table.length; row++) {
                 for (let col = 0; col < this.table[row].length; col++) {
                     const pointerDown = () => {
-                        if (this.table[row][col] === this.player && !this.selectedItem) {
+                        if ((this.table[row][col] === this.player || this.table[row][col] === this.player + 2) && !this.selectedItem && this.turn === this.player && !this.isOver) {
                             this.selectedItem = { row, col, piece: this.table[row][col] }
                             // request valid moves
                             this.$refs['board'].addEventListener('pointermove', pointerMove)
@@ -213,6 +240,7 @@ export default {
                                     // Send move to server
                                     this.selectItem({ row: this.selectedItem.row, column: this.selectedItem.col }, { row: selectedRow, column: selectedCol })
                                 }
+                                this.previousSelectedItem = { row: selectedRow, column: selectedCol }
                                 this.selectedItem = undefined
                                 this.validMoves = undefined
                             })
@@ -238,6 +266,9 @@ export default {
         },
         restart() {  
             this.socket.send(JSON.stringify({ Player: this.player, Reset: true, To: { X: 0, Y: 0 }, From: { X: 0, Y: 0 }}))    
+        },
+        pass() {
+            this.socket.send(JSON.stringify({ Player: this.player, Reset: false, To: { X: 0, Y: 0 }, From: { X: 0, Y: 0 }, Pass: true }))
         },
         convertBoard(board) {
             let table = []
