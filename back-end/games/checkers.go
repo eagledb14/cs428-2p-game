@@ -21,12 +21,24 @@ func Checkers(lobby *types.Lobby) {
 		}
 
 		if move.Reset {
+			//reset the board and send updates to both players
 			board = types.NewCheckersBoard()
+
+			//reset variables to allow any valid move from any piece
+			jumpOnly = false
+			requiredFromRow = -1
+			requiredFromCol = -1
+
 			SendUpdate(lobby, board, currentPlayer, currentPlayer, true, false)
 			continue
 		}
 
 		if move.Pass {
+			//reset variables to allow any valid move from any piece
+			jumpOnly = false
+			requiredFromRow = -1
+			requiredFromCol = -1
+
 			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
 			currentPlayer = togglePlayer(currentPlayer)
 			continue
@@ -34,7 +46,7 @@ func Checkers(lobby *types.Lobby) {
 
 		fromRow, toRow, fromCol, toCol = move.From.X, move.To.X, move.From.Y, move.To.Y
 
-		//if move was a request for possible moves, send update with board showing possible moves
+		//if move was a request for possible moves, send update to current player with board showing possible moves
 		//without ending the player's turn
 		if move.GetMoves {
 			_, moveBoard := getPossibleMoves(board, jumpOnly, fromCol, fromRow, requiredFromCol, requiredFromRow)
@@ -60,24 +72,25 @@ func Checkers(lobby *types.Lobby) {
 				//overwrite jumped piece with empty space
 				board.Set(jumpedCol, jumpedRow, 0)
 
-				//game can only end if a piece was eliminated
-				if isCheckersGameOver(board) {
-					SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, true)
-					continue
-				}
-
 				//check if the piece can jump again
-				canJumpAgain, _ := getPossibleMoves(board, true, toCol, toRow, requiredFromCol, requiredFromRow)
+				canJumpAgain, _ := getPossibleMoves(board, true, toCol, toRow, toCol, toRow)
 				if canJumpAgain {
 					//set variables to only allow jump moves from the current piece
 					jumpOnly = true
 					requiredFromRow = toRow
 					requiredFromCol = toCol
 
-					//update the player without ending their turn
+					//update the current player's board without ending their turn
 					SendUpdateSinglePlayer(lobby, board, currentPlayer, currentPlayer, currentPlayer, true, false)
 					continue
 				}
+			}
+
+			//check for game over conditions at the end of each player's turn
+			if isCheckersGameOver(board, togglePlayer(currentPlayer)) {
+				//if the game is over, update both player's boards
+				SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, true)
+				continue
 			}
 
 			//reset variables to allow any valid move from any piece
@@ -89,6 +102,7 @@ func Checkers(lobby *types.Lobby) {
 			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
 			currentPlayer = togglePlayer(currentPlayer)
 		} else {
+			//player attempted an invalid move
 			SendError(lobby, board, move, currentPlayer)
 		}
 	}
@@ -206,28 +220,35 @@ func getJumpedCoordinates(fromCol, toCol, fromRow, toRow int) (bool, int, int) {
 	}
 }
 
-func isCheckersGameOver(board types.Board) bool {
-	noRedPiecesLeft := true
-	noBlackPiecesLeft := true
+func isCheckersGameOver(board types.Board, nextPlayerToMove int) bool {
+	redPiecesLeft := false
+	blackPiecesLeft := false
+	nextPlayerCanMove := false
 
 	//look in each space for a piece
-boardCheck:
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			pieceValue, _ := board.Get(i, j)
 			if pieceValue == 1 || pieceValue == 3 {
-				noRedPiecesLeft = false
+				redPiecesLeft = true
+				//if piece is on the next player's team and a move for that player hasn't been found, check for possible moves
+				if !nextPlayerCanMove && nextPlayerToMove == 1 {
+					nextPlayerCanMove, _ = getPossibleMoves(board, false, i, j, -1, -1)
+				}
 			} else if pieceValue == 2 || pieceValue == 4 {
-				noBlackPiecesLeft = false
+				blackPiecesLeft = true
+				if !nextPlayerCanMove && nextPlayerToMove == 2 {
+					nextPlayerCanMove, _ = getPossibleMoves(board, false, i, j, -1, -1)
+				}
 			}
 
-			//no need to keep searching if a piece from each team has been found
-			if !noRedPiecesLeft && !noBlackPiecesLeft {
-				break boardCheck
+			//no need to keep searching if a piece from each team and a move for the next player has been found
+			if redPiecesLeft && blackPiecesLeft && nextPlayerCanMove {
+				return false
 			}
 		}
 	}
 
-	//if either team has no pieces on the board, the game is over
-	return noRedPiecesLeft || noBlackPiecesLeft
+	//execution will only reach here if either team is out of pieces or if next player cannot move, which means the game is over
+	return true
 }

@@ -156,7 +156,7 @@ func TestNoWin(t *testing.T) {
 	board := types.NewCheckersBoard()
 
 	//check that win condition is not met
-	value := isCheckersGameOver(board)
+	value := isCheckersGameOver(board, 1)
 	assert.False(t, value)
 }
 
@@ -175,7 +175,7 @@ func TestWinTeam1(t *testing.T) {
 	}
 
 	//check that this triggers a win condition
-	value := isCheckersGameOver(board)
+	value := isCheckersGameOver(board, 1)
 	assert.True(t, value)
 }
 
@@ -194,6 +194,25 @@ func TestWinTeam2(t *testing.T) {
 	}
 
 	//check that this triggers a win condition
-	value := isCheckersGameOver(board)
+	value := isCheckersGameOver(board, 2)
+	assert.True(t, value)
+}
+
+func TestDeadlockWinTeam2(t *testing.T) {
+	// Create a new checkers board
+	board := types.NewCheckersBoard()
+
+	//replace all empty spaces with team two's pieces
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			pieceValue, _ := board.Get(i, j)
+			if pieceValue == 0 {
+				board.Set(i, j, 2)
+			}
+		}
+	}
+
+	//check that team one's lack of valid moves triggers a win condition
+	value := isCheckersGameOver(board, 1)
 	assert.True(t, value)
 }
