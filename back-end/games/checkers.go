@@ -131,7 +131,7 @@ func getPossibleMoves(board types.Board, jumpOnly bool, currentCol, currentRow, 
 		if forwardLeftError == nil && forwardLeft == 0 && !jumpOnly {
 			possibleMovesBoard.Set(currentCol-1, currentRow-1, 5)
 			moveFound = true
-		} else if jumpLeftError == nil && forwardLeft%2 != selectedPiece%2 && jumpLeft == 0 {
+		} else if jumpLeftError == nil && forwardLeft > 0 && forwardLeft%2 != selectedPiece%2 && jumpLeft == 0 {
 			//if it is occupied by an opponent piece and the space behind it is empty, it can be jumped
 			possibleMovesBoard.Set(currentCol-2, currentRow-2, 5)
 			moveFound = true
@@ -140,7 +140,7 @@ func getPossibleMoves(board types.Board, jumpOnly bool, currentCol, currentRow, 
 		if forwardRightError == nil && forwardRight == 0 && !jumpOnly {
 			possibleMovesBoard.Set(currentCol-1, currentRow+1, 5)
 			moveFound = true
-		} else if jumpRightError == nil && forwardRight%2 != selectedPiece%2 && jumpRight == 0 {
+		} else if jumpRightError == nil && forwardRight > 0 && forwardRight%2 != selectedPiece%2 && jumpRight == 0 {
 			possibleMovesBoard.Set(currentCol-2, currentRow+2, 5)
 			moveFound = true
 		}
@@ -155,14 +155,14 @@ func getPossibleMoves(board types.Board, jumpOnly bool, currentCol, currentRow, 
 		if forwardLeftError == nil && forwardLeft == 0 && !jumpOnly {
 			possibleMovesBoard.Set(currentCol+1, currentRow-1, 5)
 			moveFound = true
-		} else if jumpLeftError == nil && forwardLeft%2 != selectedPiece%2 && jumpLeft == 0 {
+		} else if jumpLeftError == nil && forwardLeft > 0 && forwardLeft%2 != selectedPiece%2 && jumpLeft == 0 {
 			possibleMovesBoard.Set(currentCol+2, currentRow-2, 5)
 			moveFound = true
 		}
 
 		if forwardRightError == nil && forwardRight == 0 && !jumpOnly {
 			possibleMovesBoard.Set(currentCol+1, currentRow+1, 5)
-		} else if jumpRightError == nil && forwardRight%2 != selectedPiece%2 && jumpRight == 0 {
+		} else if jumpRightError == nil && forwardRight > 0 && forwardRight%2 != selectedPiece%2 && jumpRight == 0 {
 			possibleMovesBoard.Set(currentCol+2, currentRow+2, 5)
 			moveFound = true
 		}
