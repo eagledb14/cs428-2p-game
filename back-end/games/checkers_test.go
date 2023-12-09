@@ -11,17 +11,12 @@ func TestCheckers(t *testing.T) {
 
 }
 
-func TestMeh(t *testing.T) {
-	board := types.NewCheckersBoard()
-	SendUpdateSinglePlayer(nil, board, 1, 1, 1, true, false)
-}
-
 func TestValidMove(t *testing.T) {
 	// Create a new checkers board
 	board := types.NewCheckersBoard()
 
 	//check that black piece is allowed to move forward
-	value := isCheckersMoveValid(board, false, 2, 3, 3, 2, 2, 2)
+	value := isCheckersMoveValid(board, false, 2, 3, 3, 2, -1, -1, 2, 2)
 	assert.True(t, value)
 }
 
@@ -30,7 +25,7 @@ func TestGetPossibleMovesBlackPiece(t *testing.T) {
 	board := types.NewCheckersBoard()
 
 	//check that black king piece is allowed to move backward
-	_, moveBoard := getPossibleMoves(board, false, 2, 3)
+	_, moveBoard := getPossibleMoves(board, false, 2, 3, -1, -1)
 
 	leftMoveValue, _ := moveBoard.Get(3, 2)
 	rightMoveValue, _ := moveBoard.Get(3, 4)
@@ -46,7 +41,7 @@ func TestGetPossibleMovesRedPiece(t *testing.T) {
 	board := types.NewCheckersBoard()
 
 	//check that black king piece is allowed to move backward
-	_, moveBoard := getPossibleMoves(board, false, 5, 2)
+	_, moveBoard := getPossibleMoves(board, false, 5, 2, -1, -1)
 
 	leftMoveValue, _ := moveBoard.Get(4, 1)
 	rightMoveValue, _ := moveBoard.Get(4, 3)
@@ -68,7 +63,7 @@ func TestValidKingMove(t *testing.T) {
 	board.Set(2, 3, 4)
 
 	//check that black king piece is allowed to move backward
-	value := isCheckersMoveValid(board, false, 2, 1, 3, 2, 2, 2)
+	value := isCheckersMoveValid(board, false, 2, 1, 3, 2, -1, -1, 2, 2)
 	assert.True(t, value)
 }
 
@@ -80,7 +75,7 @@ func TestInvalidMove(t *testing.T) {
 	board.Set(1, 2, 0)
 
 	//check that black piece is not allowed to move backward
-	value := isCheckersMoveValid(board, false, 2, 1, 3, 2, 2, 2)
+	value := isCheckersMoveValid(board, false, 2, 1, 3, 2, -1, -1, 2, 2)
 	assert.False(t, value)
 }
 
@@ -97,7 +92,7 @@ func TestValidJump(t *testing.T) {
 	board.Set(4, 1, 1)
 
 	//check that red piece is allowed to jump black piece
-	value := isCheckersMoveValid(board, false, 4, 2, 1, 3, 1, 1)
+	value := isCheckersMoveValid(board, false, 4, 2, 1, 3, -1, -1, 1, 1)
 	assert.True(t, value)
 }
 
@@ -113,7 +108,7 @@ func TestInvalidJump(t *testing.T) {
 	board.Set(3, 2, 3)
 
 	//check that red king piece is not allowed to jump red piece
-	value := isCheckersMoveValid(board, false, 3, 5, 2, 0, 1, 1)
+	value := isCheckersMoveValid(board, false, 3, 5, 2, 0, -1, -1, 1, 1)
 	assert.False(t, value)
 }
 

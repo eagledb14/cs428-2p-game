@@ -9,6 +9,11 @@ func Checkers(lobby *types.Lobby) {
 	currentPlayer := 1
 	var fromRow, toRow, fromCol, toCol int
 
+	//these are used during multi-jumps
+	requiredFromRow := -1
+	requiredFromCol := -1
+	jumpOnly := false
+
 	for {
 		move, quit := validateMsg(lobby)
 		if quit {
@@ -32,12 +37,12 @@ func Checkers(lobby *types.Lobby) {
 		//if move was a request for possible moves, send update with board showing possible moves
 		//without ending the player's turn
 		if move.GetMoves {
-			_, moveBoard := getPossibleMoves(board, move.JumpOnly, fromCol, fromRow)
+			_, moveBoard := getPossibleMoves(board, jumpOnly, fromCol, fromRow, requiredFromCol, requiredFromRow)
 			SendUpdateSinglePlayer(lobby, moveBoard, currentPlayer, currentPlayer, currentPlayer, true, false)
 			continue
 		}
 
-		if isCheckersMoveValid(board, move.JumpOnly, fromCol, toCol, fromRow, toRow, currentPlayer, move.Player) {
+		if isCheckersMoveValid(board, jumpOnly, fromCol, toCol, fromRow, toRow, requiredFromCol, requiredFromRow, currentPlayer, move.Player) {
 			pieceValue, _ := board.Get(fromCol, fromRow)
 
 			//see if piece reached opposite end of board and should be promoted
@@ -61,14 +66,26 @@ func Checkers(lobby *types.Lobby) {
 					continue
 				}
 
-				//check if the piece can jump again, and notify player if so
-				canJumpAgain, _ := getPossibleMoves(board, true, toCol, toRow)
+				//check if the piece can jump again
+				canJumpAgain, _ := getPossibleMoves(board, true, toCol, toRow, requiredFromCol, requiredFromRow)
 				if canJumpAgain {
+					//set variables to only allow jump moves from the current piece
+					jumpOnly = true
+					requiredFromRow = toRow
+					requiredFromCol = toCol
+
+					//update the player without ending their turn
 					SendUpdateSinglePlayer(lobby, board, currentPlayer, currentPlayer, currentPlayer, true, false)
 					continue
 				}
 			}
 
+			//reset variables to allow any valid move from any piece
+			jumpOnly = false
+			requiredFromRow = -1
+			requiredFromCol = -1
+
+			//update both players and switch to next player's turn
 			SendUpdate(lobby, board, currentPlayer, togglePlayer(currentPlayer), true, false)
 			currentPlayer = togglePlayer(currentPlayer)
 		} else {
@@ -78,10 +95,15 @@ func Checkers(lobby *types.Lobby) {
 
 }
 
-func getPossibleMoves(board types.Board, jumpOnly bool, currentCol, currentRow int) (bool, types.Board) {
+func getPossibleMoves(board types.Board, jumpOnly bool, currentCol, currentRow, requiredCol, requiredRow int) (bool, types.Board) {
 	possibleMovesBoard := types.NewCheckersBoard()
 	selectedPiece, _ := board.Get(currentCol, currentRow)
 	moveFound := false
+
+	//during multi-jumps, only the piece performing the jump is allowed to make moves
+	if (requiredCol > -1 && requiredCol != currentCol) || (requiredRow > -1 && requiredRow != currentRow) {
+		return moveFound, possibleMovesBoard
+	}
 
 	//normal pieces will only use the first check (red) or the second (black), but king pieces will use both
 	if selectedPiece == 1 || selectedPiece > 2 {
@@ -135,7 +157,7 @@ func getPossibleMoves(board types.Board, jumpOnly bool, currentCol, currentRow i
 	return moveFound, possibleMovesBoard
 }
 
-func isCheckersMoveValid(board types.Board, jumpOnly bool, fromCol, toCol, fromRow, toRow, currentPlayer, playerWhoMoved int) bool {
+func isCheckersMoveValid(board types.Board, jumpOnly bool, fromCol, toCol, fromRow, toRow, requiredFromCol, requiredFromRow, currentPlayer, playerWhoMoved int) bool {
 	if currentPlayer != playerWhoMoved {
 		return false
 	}
@@ -148,7 +170,7 @@ func isCheckersMoveValid(board types.Board, jumpOnly bool, fromCol, toCol, fromR
 	}
 
 	//use the possible moves function to check if the attempted destination is valid
-	_, possibleMovesBoard := getPossibleMoves(board, jumpOnly, fromCol, fromRow)
+	_, possibleMovesBoard := getPossibleMoves(board, jumpOnly, fromCol, fromRow, requiredFromCol, requiredFromRow)
 	destination, destinationError := possibleMovesBoard.Get(toCol, toRow)
 
 	//if destination is valid, it will be marked on the board as a possible move by the number 5
