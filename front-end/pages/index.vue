@@ -6,8 +6,8 @@
         <div class="game-options">
             <NuxtLink to="/checkers" class="game-icon"><img src="/checkers.jpg"></NuxtLink>
             <NuxtLink to="/tictactoe" class="game-icon"><img src="/tictactoe.jpg"></NuxtLink>
-          <NuxtLink to="/fourinarow" class="game-icon"><img src="/Connect_Four_icon_and_logo.png"></NuxtLink>
-          <NuxtLink to="/othello" class="game-icon"><img src="/othello_icon.png"></NuxtLink>
+            <NuxtLink to="/fourinarow" class="game-icon"><img src="/Connect4LogoNew.png"></NuxtLink>
+            <NuxtLink to="/othello" class="game-icon"><img src="/othello_icon.png"></NuxtLink>
 
         </div>
         <h1> or input a lobby ID</h1>
@@ -85,4 +85,8 @@ input {
     font-weight: bold;
     min-height: 48px;
 }
+.submit-button:hover {
+  background: rgb(79, 79, 79); /* Darker shade when hovered */
+}
+
 </style>

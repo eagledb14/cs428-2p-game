@@ -4,7 +4,10 @@
     <h1>Lobby ID: {{ this.lobbyId }}</h1>
     <div ref="board" class="connect-four-board">
       <div v-for="(column, colIndex) in table" class="column">
-        <div v-for="(cell, rowIndex) in column" :class="cellClass(cell)" @click="dropDisk(colIndex)" class="cell"></div>
+        <div v-for="(cell, rowIndex) in column" :class="cellClass(cell)" @click="dropDisk(colIndex)" class="cell">
+          <!-- The img tag should be inside this div -->
+          <img v-if="cell !== 0" :src="getImage(cell)" alt="Game piece" class="game-piece"/>
+        </div>
       </div>
     </div>
     <div v-if="isOver" class="game-over">
@@ -15,15 +18,16 @@
       <button @click="copyGameLink()">Share Game</button>
     </div>
       <div class="scores">
+          <!-- Red Player Score -->
           <div class="score">
-              <div class="display-cell-1"></div>
+              <img :src="redPiece" class="display-cell-1">
               <span>: {{ this.score1 }}</span>
           </div>
-          <div class="score">
+          <div class="score tie-score">
               <span>Ties: {{ this.ties }}</span>
           </div>
           <div class="score">
-              <div class="display-cell-2" ></div>
+            <img :src="yellowPiece" class="display-cell-2">
               <span>: {{ this.score2 }}</span>
           </div>
       </div>
@@ -45,6 +49,8 @@ export default {
       player: 0,
       game: 'fourinarow',
       api: 'game.blackman.zip/api',
+      redPiece: '/Red Checker.svg',
+      yellowPiece: '/Yellow Checker.svg',
       // Other necessary data
     }
   },
@@ -125,6 +131,15 @@ export default {
         'player2-cell': cellValue === 2,
       };
     },
+
+    getImage(cellValue) {
+      if (cellValue === 1) {
+        return this.redPiece; // Path to Player 1's image
+      } else if (cellValue === 2) {
+        return this.yellowPiece; // Path to Player 2's image
+      }
+      return ''; // Return empty string for empty cells
+    },
     // Additional methods as needed
   },
   computed: {
@@ -146,45 +161,69 @@ export default {
 }
 </script>
 <style>
+body {
+  font-family: 'Arial', sans-serif; /* or use Google Fonts */
+  background-color: #f4f4f4; /* soft background color */
+  color: #333; /* readable text color */
+}
+
 .connect-four-board {
   display: grid;
-  grid-template-columns: repeat(7, 50px);
-  grid-gap: 5px;
+  grid-template-columns: repeat(7, 60px); /* Increase the size of each column */
+  grid-gap: 6px; /* Increase the gap if desired */
+  background-color: blue; /* Set the board background to blue */
+  padding: 10px; /* Add some padding around the board */
+  border-radius: 10px; /* Optional: rounded corners for the board */
+  justify-content: center; /* Center the board horizontally */
+  margin: auto; /* Also helps in centering the board */
 }
 .cell {
-  width: 5.5vh;
-  height: 5.5vh;
+  width: 60px; /* Increased from 5.5vh */
+  height: 60px; /* Increased from 5.5vh */
   border-radius: 50%;
-  background-color: lightgray;
+  background-color: white; /* Change cell color for contrast */
   display: flex;
   justify-content: center;
   align-items: center;
+  border: 2px solid #000; /* Optional: add a border to each cell */
 }
+.cell img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 50%; /* optional, for rounded images */
+}
+
 .display-cell-1 {
-  width: 20px;
-  height: 20px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background-color: red;
+  background-size: cover;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 .display-cell-2 {
-  width: 20px;
-  height: 20px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background-color: yellow;
+  background-size: cover;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 .player1-cell {
   background-color: red;
+
 }
 .player2-cell {
   background-color: yellow;
+
 }
 .buttons {
+  display: flex;
+  justify-content: space-between;
   margin: 10px;
 }
 button {
@@ -196,17 +235,39 @@ button {
     font-size: 0.875rem;
     font-weight: bold;
     min-height: 48px;
+    margin-right: 10px;
+}
+button:last-child {
+  margin-right: 0;
+}
+
+.buttons button:hover {
+  background-color: #0056b3; /* darker shade on hover */
 }
 .score {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-right: 20px; /* Space between score displays */
+    font-size: 1.5em; /* Enlarge the font size */
 }
 .scores {
-    justify-content: space-between;
+    justify-content: center;
     display: flex;
-    width: 150px;
-    padding: 20px;
+    width: 100%;
+    padding: 20px 0;
+    align-items: center;
 }
 /* Additional styling */
+
+.tie-score {
+  font-weight: bold;
+  color: #333; /* Distinct color */
+}
+
+.game-piece {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 50%; /* optional, for rounded images */
+}
 </style>
