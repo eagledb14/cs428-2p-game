@@ -25,14 +25,14 @@
         </div>
 
         <div class="scores">
-            <div class="score">
+            <div class="score" :class="turn === 1 ? 'current-player': ''">
                 <img :src="blackPiece" class="player-icon"/>
                 <span>: {{ this.score1 }}</span>
             </div>
             <div class="score">
                 <span>Ties: {{ this.ties }}</span>
             </div>
-            <div class="score">
+            <div class="score" :class="turn === 2 ? 'current-player': ''">
                 <img :src="whitePiece" class="player-icon"/>
                 <span>: {{ this.score2 }}</span>
             </div>
@@ -243,20 +243,9 @@ button {
 .tic-tac-toe-board {
     padding: 24px 0;
 }
-.score {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 .player-icon {
     width: 25px;
     height: 25px;
-}
-.scores {
-    justify-content: space-between;
-    display: flex;
-    width: 150px;
-    padding: 20px;
 }
 .buttons {
     display: flex;

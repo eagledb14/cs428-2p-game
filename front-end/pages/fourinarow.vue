@@ -19,14 +19,14 @@
     </div>
       <div class="scores">
           <!-- Red Player Score -->
-          <div class="score">
+          <div class="score" :class="turn === 1 ? 'current-player': ''">
               <img :src="redPiece" class="display-cell-1">
               <span>: {{ this.score1 }}</span>
           </div>
           <div class="score tie-score">
               <span>Ties: {{ this.ties }}</span>
           </div>
-          <div class="score">
+          <div class="score" :class="turn === 2 ? 'current-player': ''">
             <img :src="yellowPiece" class="display-cell-2">
               <span>: {{ this.score2 }}</span>
           </div>
@@ -169,7 +169,7 @@ body {
 
 .connect-four-board {
   display: grid;
-  grid-template-columns: repeat(7, 60px); /* Increase the size of each column */
+  grid-template-columns: repeat(7, min(11vmin, 60px)); /* Increase the size of each column */
   grid-gap: 6px; /* Increase the gap if desired */
   background-color: blue; /* Set the board background to blue */
   padding: 10px; /* Add some padding around the board */
@@ -178,8 +178,10 @@ body {
   margin: auto; /* Also helps in centering the board */
 }
 .cell {
-  width: 60px; /* Increased from 5.5vh */
-  height: 60px; /* Increased from 5.5vh */
+  height: 11vmin;
+  width: 11vmin;
+  max-width: 60px;
+  max-height: 60px;
   border-radius: 50%;
   background-color: white; /* Change cell color for contrast */
   display: flex;
@@ -244,20 +246,7 @@ button:last-child {
 .buttons button:hover {
   background-color: #0056b3; /* darker shade on hover */
 }
-.score {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 20px; /* Space between score displays */
-    font-size: 1.5em; /* Enlarge the font size */
-}
-.scores {
-    justify-content: center;
-    display: flex;
-    width: 100%;
-    padding: 20px 0;
-    align-items: center;
-}
+
 /* Additional styling */
 
 .tie-score {
